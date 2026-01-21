@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul Minimalist Trip</title>
+    <title>Seoul 2026 | My Trip</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,87 +11,95 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F7F9F9; }
-        .mint-theme { --mint: #7FBDAE; --mint-light: #E8F4F1; }
+        .mint-theme { --mint: #7FBDAE; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #map { height: 250px; border-radius: 24px; z-index: 10; }
+        #map { height: 280px; border-radius: 32px; z-index: 10; margin-top: 1rem; }
         .date-card.active { background-color: #7FBDAE; color: white; transform: scale(1.05); }
     </style>
 </head>
 <body class="mint-theme">
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-xl relative overflow-hidden">
         
-        <header class="pt-8 px-6 pb-4">
-            <h1 class="text-2xl font-light text-slate-800 tracking-widest uppercase">Seoul <span class="font-bold" style="color: var(--mint)">2026</span></h1>
+        <header class="pt-10 px-6 pb-2">
+            <h1 class="text-2xl font-light text-slate-800 tracking-widest">SEOUL <span class="font-bold" style="color: var(--mint)">03/03 - 03/08</span></h1>
             
             <div class="flex space-x-4 overflow-x-auto no-scrollbar py-6">
-                <div v-for="d in dates" :key="d.day" 
-                     @click="activeDay = d.day"
-                     :class="['date-card min-w-[60px] h-20 flex flex-col items-center justify-center rounded-2xl border border-slate-100 transition-all cursor-pointer shadow-sm', activeDay === d.day ? 'active' : 'bg-white text-slate-400']">
-                    <span class="text-xs uppercase">{{ d.week }}</span>
-                    <span class="text-lg font-bold">{{ d.day }}</span>
+                <div v-for="d in dates" :key="d.fullDate" 
+                     @click="activeDate = d.fullDate"
+                     :class="['date-card min-w-[65px] h-20 flex flex-col items-center justify-center rounded-2xl border border-slate-100 transition-all cursor-pointer shadow-sm', activeDate === d.fullDate ? 'active' : 'bg-white text-slate-400']">
+                    <span class="text-[10px] uppercase font-bold">{{ d.week }}</span>
+                    <span class="text-lg font-bold">{{ d.displayDay }}</span>
                 </div>
             </div>
         </header>
 
-        <section class="px-6 mb-6">
-            <div id="map" class="shadow-inner border border-slate-100"></div>
-            <p class="text-[10px] text-slate-400 mt-2 text-right italic">已自動釘選今日所有行程地點</p>
+        <section class="px-6">
+            <div id="map" class="shadow-lg border border-white"></div>
         </section>
 
-        <nav class="flex px-6 mb-4 space-x-6 text-sm font-bold">
-            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-800 border-b-2 border-slate-800' : 'text-slate-300'">行程規劃</button>
-            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-800 border-b-2 border-slate-800' : 'text-slate-300'">匯率分帳</button>
+        <nav class="flex px-8 mt-6 mb-4 space-x-8 text-sm font-bold">
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-800 border-b-2 border-slate-800 pb-1' : 'text-slate-300'">行程規劃</button>
+            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-800 border-b-2 border-slate-800 pb-1' : 'text-slate-300'">匯率分帳</button>
         </nav>
 
-        <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-24">
-            
-            <div v-if="tab === 'plan'" class="space-y-4">
-                <div v-for="item in dailyItinerary" :key="item.id" class="bg-slate-50 p-4 rounded-3xl flex items-center">
-                    <div class="w-16 text-center border-r border-slate-200 mr-4">
-                        <div class="text-xs text-slate-400">{{ item.time }}</div>
-                        <div class="text-[10px] font-bold" style="color: var(--mint)">{{ item.temp }}°C</div>
+        <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-28">
+            <div v-if="tab === 'plan'" class="space-y-4 animate-fade-in">
+                <div v-for="item in currentItinerary" :key="item.id" class="bg-slate-50 p-5 rounded-[2rem] flex items-start group active:bg-slate-100 transition-colors">
+                    <div class="w-20 pt-1">
+                        <div class="text-xs font-bold text-slate-800">{{ item.time }}</div>
+                        <div v-if="item.temp" class="text-[10px] font-medium mt-1" style="color: var(--mint)">
+                            <i class="fas fa-temperature-low"></i> {{ item.temp }}°C
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="text-sm font-bold text-slate-700">{{ item.location }}</h4>
-                        <p class="text-[10px] text-slate-400">{{ item.note }}</p>
+                    <div class="flex-1 ml-2">
+                        <h4 class="text-sm font-black text-slate-700 mb-1">{{ item.location }}</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">{{ item.note }}</p>
                     </div>
+                </div>
+                <div v-if="currentItinerary.length === 0" class="text-center py-10 text-slate-300 text-sm italic">
+                    點擊下方 + 開始規劃這天的行程
                 </div>
             </div>
 
-            <div v-if="tab === 'split'" class="space-y-6 animate-fade-in">
-                <div class="bg-slate-50 p-6 rounded-[2rem]">
-                    <label class="text-xs font-bold text-slate-400 block mb-2">輸入韓元 (KRW)</label>
-                    <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-3xl font-light outline-none border-b border-slate-200 pb-2" placeholder="0">
-                    
-                    <div class="mt-4 flex justify-between items-center">
-                        <span class="text-xs text-slate-500">當前匯率 0.024 (預估)</span>
-                        <span class="text-xl font-bold" style="color: var(--mint)">≈ NT$ {{ twdOutput }}</span>
+            <div v-if="tab === 'split'" class="space-y-6 pt-2">
+                <div class="bg-[#F2F7F6] p-8 rounded-[2.5rem]">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">KRW to TWD</p>
+                    <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-4xl font-light outline-none border-b border-slate-200 pb-2" placeholder="₩ 0">
+                    <div class="mt-6 flex justify-between items-end">
+                        <span class="text-xs text-slate-400">匯率參考 0.024</span>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block mb-1">估計台幣</span>
+                            <span class="text-2xl font-bold" style="color: var(--mint)">NT$ {{ twdOutput }}</span>
+                        </div>
                     </div>
                 </div>
-
-                <div class="px-2">
-                    <label class="text-xs font-bold text-slate-400 block mb-2">分帳人數：{{ splitCount }} 人</label>
-                    <input v-model="splitCount" type="range" min="1" max="10" class="w-full accent-[#7FBDAE]">
-                    <div class="mt-4 p-4 bg-slate-800 text-white rounded-2xl flex justify-between items-center">
-                        <span class="text-sm">每人應付 (TWD)</span>
-                        <span class="text-lg font-bold">NT$ {{ perPersonTwd }}</span>
+                <div class="px-4 mt-8">
+                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-4 uppercase">
+                        <span>分帳人數</span>
+                        <span>{{ splitCount }} 人</span>
+                    </div>
+                    <input v-model="splitCount" type="range" min="1" max="10" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#7FBDAE]">
+                    <div class="mt-6 p-6 bg-slate-900 text-white rounded-3xl flex justify-between items-center shadow-xl">
+                        <span class="text-xs font-bold opacity-60">每人應付</span>
+                        <span class="text-xl font-bold">NT$ {{ perPersonTwd }}</span>
                     </div>
                 </div>
             </div>
         </main>
 
-        <div class="absolute bottom-6 left-6 right-6 h-16 bg-white/80 backdrop-blur-lg rounded-full shadow-lg border border-slate-100 flex justify-around items-center px-4">
-            <button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            </button>
-            <button @click="alert('功能開發中!')" class="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white" style="background-color: var(--mint)">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-            </button>
-            <button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </button>
+        <div class="fixed bottom-8 left-0 right-0 px-8 flex justify-between items-center z-50">
+            <div class="bg-white/90 backdrop-blur-md w-full h-16 rounded-full shadow-2xl border border-slate-50 flex justify-around items-center px-4">
+                <button class="text-slate-400"><i class="fas fa-map-marked-alt text-lg"></i></button>
+                <button @click="tab = 'plan'" class="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform active:scale-90" style="background-color: var(--mint)">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button @click="tab = 'split'" class="text-slate-400"><i class="fas fa-calculator text-lg"></i></button>
+            </div>
         </div>
     </div>
+
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <script>
         const { createApp, ref, onMounted, computed, watch } = Vue;
@@ -99,35 +107,36 @@
         createApp({
             setup() {
                 const tab = ref('plan');
-                const activeDay = ref(21);
+                const activeDate = ref('2026-03-03');
                 const krwInput = ref(0);
                 const splitCount = ref(2);
                 let map;
                 let markers = [];
 
                 const dates = [
-                    { week: 'Wed', day: 21 }, { week: 'Thu', day: 22 },
-                    { week: 'Fri', day: 23 }, { week: 'Sat', day: 24 }, { week: 'Sun', day: 25 }
+                    { week: 'Tue', displayDay: '03', fullDate: '2026-03-03' },
+                    { week: 'Wed', displayDay: '04', fullDate: '2026-03-04' },
+                    { week: 'Thu', displayDay: '05', fullDate: '2026-03-05' },
+                    { week: 'Fri', displayDay: '06', fullDate: '2026-03-06' },
+                    { week: 'Sat', displayDay: '07', fullDate: '2026-03-07' },
+                    { week: 'Sun', displayDay: '08', fullDate: '2026-03-08' }
                 ];
 
-                // 模擬行程數據（包含坐標用於地圖）
                 const itineraryData = {
-                    21: [
-                        { id: 1, time: '10:00', location: '景福宮', temp: -2, note: '韓服拍照', lat: 37.5796, lng: 126.9770 },
-                        { id: 2, time: '14:00', location: '聖水洞', temp: 1, note: '極簡咖啡廳', lat: 37.5445, lng: 127.0560 },
-                        { id: 3, time: '18:00', location: '明洞', temp: 0, note: '換錢、吃街邊料理', lat: 37.5635, lng: 126.9815 }
+                    '2026-03-03': [
+                        { id: 1, time: '08:30', location: '桃園機場 T2', note: '前往機場報到', lat: 25.0797, lng: 121.2342 },
+                        { id: 2, time: '11:40', location: '仁川機場 ICN T2', note: 'OZ712 韓亞航空 (預計15:25抵達)', lat: 37.4602, lng: 126.4407 },
+                        { id: 3, time: '16:00', location: '機場巴士站', note: '搭乘 6001/6015 往市區 (約1.5小時)', lat: 37.4640, lng: 126.4400 },
+                        { id: 4, time: '18:00', location: 'L7 Myeongdong', note: '飯店 Check-in 樂天 L7 明洞', lat: 37.5607, lng: 126.9861 }
                     ]
                 };
 
-                const dailyItinerary = computed(() => itineraryData[activeDay.value] || []);
+                const currentItinerary = computed(() => itineraryData[activeDate.value] || []);
+                const twdOutput = computed(() => Math.round(krwInput.value * 0.024));
+                const perPersonTwd = computed(() => Math.round(twdOutput.value / splitCount.value));
 
-                // 匯率計算
-                const twdOutput = computed(() => (krwInput.value * 0.024).toFixed(0));
-                const perPersonTwd = computed(() => (twdOutput.value / splitCount.value).toFixed(0));
-
-                // 地圖初始化與更新
                 const initMap = () => {
-                    map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 11);
+                    map = L.map('map', { zoomControl: false }).setView([37.5607, 126.9861], 10);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
                     updateMarkers();
                 };
@@ -137,28 +146,26 @@
                     markers = [];
                     const coords = [];
 
-                    dailyItinerary.value.forEach(item => {
+                    currentItinerary.value.forEach(item => {
                         const marker = L.circleMarker([item.lat, item.lng], {
-                            radius: 8, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#7FBDAE'
-                        }).addTo(map).bindPopup(item.location);
+                            radius: 7, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#7FBDAE'
+                        }).addTo(map).bindPopup(`<b>${item.time}</b><br>${item.location}`);
                         markers.push(marker);
                         coords.push([item.lat, item.lng]);
                     });
 
-                    if (coords.length > 0) map.fitBounds(coords, { padding: [30, 30] });
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [40, 40] });
                 };
+
+                watch(activeDate, () => {
+                    updateMarkers();
+                });
 
                 onMounted(() => {
                     initMap();
-                    // 模擬讀取目前位置
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(pos => {
-                            L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map).bindPopup('你的位置');
-                        });
-                    }
                 });
 
-                return { tab, activeDay, dates, dailyItinerary, krwInput, twdOutput, splitCount, perPersonTwd };
+                return { tab, activeDate, dates, currentItinerary, krwInput, twdOutput, splitCount, perPersonTwd };
             }
         }).mount('#app');
     </script>
