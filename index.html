@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Seoul Minimalist Trip</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F7F9F9; }
+        .mint-theme { --mint: #7FBDAE; --mint-light: #E8F4F1; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #map { height: 250px; border-radius: 24px; z-index: 10; }
+        .date-card.active { background-color: #7FBDAE; color: white; transform: scale(1.05); }
+    </style>
+</head>
+<body class="mint-theme">
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-xl relative overflow-hidden">
+        
+        <header class="pt-8 px-6 pb-4">
+            <h1 class="text-2xl font-light text-slate-800 tracking-widest uppercase">Seoul <span class="font-bold" style="color: var(--mint)">2026</span></h1>
+            
+            <div class="flex space-x-4 overflow-x-auto no-scrollbar py-6">
+                <div v-for="d in dates" :key="d.day" 
+                     @click="activeDay = d.day"
+                     :class="['date-card min-w-[60px] h-20 flex flex-col items-center justify-center rounded-2xl border border-slate-100 transition-all cursor-pointer shadow-sm', activeDay === d.day ? 'active' : 'bg-white text-slate-400']">
+                    <span class="text-xs uppercase">{{ d.week }}</span>
+                    <span class="text-lg font-bold">{{ d.day }}</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="px-6 mb-6">
+            <div id="map" class="shadow-inner border border-slate-100"></div>
+            <p class="text-[10px] text-slate-400 mt-2 text-right italic">已自動釘選今日所有行程地點</p>
+        </section>
+
+        <nav class="flex px-6 mb-4 space-x-6 text-sm font-bold">
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-800 border-b-2 border-slate-800' : 'text-slate-300'">行程規劃</button>
+            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-800 border-b-2 border-slate-800' : 'text-slate-300'">匯率分帳</button>
+        </nav>
+
+        <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-24">
+            
+            <div v-if="tab === 'plan'" class="space-y-4">
+                <div v-for="item in dailyItinerary" :key="item.id" class="bg-slate-50 p-4 rounded-3xl flex items-center">
+                    <div class="w-16 text-center border-r border-slate-200 mr-4">
+                        <div class="text-xs text-slate-400">{{ item.time }}</div>
+                        <div class="text-[10px] font-bold" style="color: var(--mint)">{{ item.temp }}°C</div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-slate-700">{{ item.location }}</h4>
+                        <p class="text-[10px] text-slate-400">{{ item.note }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="tab === 'split'" class="space-y-6 animate-fade-in">
+                <div class="bg-slate-50 p-6 rounded-[2rem]">
+                    <label class="text-xs font-bold text-slate-400 block mb-2">輸入韓元 (KRW)</label>
+                    <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-3xl font-light outline-none border-b border-slate-200 pb-2" placeholder="0">
+                    
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="text-xs text-slate-500">當前匯率 0.024 (預估)</span>
+                        <span class="text-xl font-bold" style="color: var(--mint)">≈ NT$ {{ twdOutput }}</span>
+                    </div>
+                </div>
+
+                <div class="px-2">
+                    <label class="text-xs font-bold text-slate-400 block mb-2">分帳人數：{{ splitCount }} 人</label>
+                    <input v-model="splitCount" type="range" min="1" max="10" class="w-full accent-[#7FBDAE]">
+                    <div class="mt-4 p-4 bg-slate-800 text-white rounded-2xl flex justify-between items-center">
+                        <span class="text-sm">每人應付 (TWD)</span>
+                        <span class="text-lg font-bold">NT$ {{ perPersonTwd }}</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="absolute bottom-6 left-6 right-6 h-16 bg-white/80 backdrop-blur-lg rounded-full shadow-lg border border-slate-100 flex justify-around items-center px-4">
+            <button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </button>
+            <button @click="alert('功能開發中!')" class="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white" style="background-color: var(--mint)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            </button>
+            <button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted, computed, watch } = Vue;
+
+        createApp({
+            setup() {
+                const tab = ref('plan');
+                const activeDay = ref(21);
+                const krwInput = ref(0);
+                const splitCount = ref(2);
+                let map;
+                let markers = [];
+
+                const dates = [
+                    { week: 'Wed', day: 21 }, { week: 'Thu', day: 22 },
+                    { week: 'Fri', day: 23 }, { week: 'Sat', day: 24 }, { week: 'Sun', day: 25 }
+                ];
+
+                // 模擬行程數據（包含坐標用於地圖）
+                const itineraryData = {
+                    21: [
+                        { id: 1, time: '10:00', location: '景福宮', temp: -2, note: '韓服拍照', lat: 37.5796, lng: 126.9770 },
+                        { id: 2, time: '14:00', location: '聖水洞', temp: 1, note: '極簡咖啡廳', lat: 37.5445, lng: 127.0560 },
+                        { id: 3, time: '18:00', location: '明洞', temp: 0, note: '換錢、吃街邊料理', lat: 37.5635, lng: 126.9815 }
+                    ]
+                };
+
+                const dailyItinerary = computed(() => itineraryData[activeDay.value] || []);
+
+                // 匯率計算
+                const twdOutput = computed(() => (krwInput.value * 0.024).toFixed(0));
+                const perPersonTwd = computed(() => (twdOutput.value / splitCount.value).toFixed(0));
+
+                // 地圖初始化與更新
+                const initMap = () => {
+                    map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 11);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+                    updateMarkers();
+                };
+
+                const updateMarkers = () => {
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+                    const coords = [];
+
+                    dailyItinerary.value.forEach(item => {
+                        const marker = L.circleMarker([item.lat, item.lng], {
+                            radius: 8, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#7FBDAE'
+                        }).addTo(map).bindPopup(item.location);
+                        markers.push(marker);
+                        coords.push([item.lat, item.lng]);
+                    });
+
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [30, 30] });
+                };
+
+                onMounted(() => {
+                    initMap();
+                    // 模擬讀取目前位置
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(pos => {
+                            L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map).bindPopup('你的位置');
+                        });
+                    }
+                });
+
+                return { tab, activeDay, dates, dailyItinerary, krwInput, twdOutput, splitCount, perPersonTwd };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
