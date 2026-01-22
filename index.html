@@ -8,98 +8,99 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F7F9F9; }
-        .mint-theme { --mint: #7FBDAE; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
+        .mint-theme { --mint: #7FBDAE; --naver: #03C75A; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #map { height: 280px; border-radius: 32px; z-index: 10; margin-top: 1rem; }
-        .date-card.active { background-color: #7FBDAE; color: white; transform: scale(1.05); }
+        #map { height: 260px; border-radius: 28px; z-index: 10; margin-top: 1rem; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+        .btn-naver { background: #03C75A; color: white; padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(3, 199, 90, 0.2); }
+        .btn-info { background: #f1f5f9; color: #475569; padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; }
+        .date-card.active { background: #1e293b; color: white; transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="mint-theme">
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-xl relative overflow-hidden">
         
-        <header class="pt-10 px-6 pb-2">
-            <h1 class="text-2xl font-light text-slate-800 tracking-widest">SEOUL <span class="font-bold" style="color: var(--mint)">03/03 - 03/08</span></h1>
+        <header class="pt-10 px-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-800 tracking-tight">SEOUL <span style="color: var(--mint)">2026</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Hello Traveler!</p>
+                </div>
+                <div class="text-right bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
+                    <span class="block text-[9px] font-black text-emerald-600 uppercase">Seoul Weather</span>
+                    <span class="text-xl font-black text-emerald-700">{{ seoulTemp }}°C</span>
+                </div>
+            </div>
             
-            <div class="flex space-x-4 overflow-x-auto no-scrollbar py-6">
+            <div class="flex space-x-3 overflow-x-auto no-scrollbar py-6">
                 <div v-for="d in dates" :key="d.fullDate" 
                      @click="activeDate = d.fullDate"
-                     :class="['date-card min-w-[65px] h-20 flex flex-col items-center justify-center rounded-2xl border border-slate-100 transition-all cursor-pointer shadow-sm', activeDate === d.fullDate ? 'active' : 'bg-white text-slate-400']">
-                    <span class="text-[10px] uppercase font-bold">{{ d.week }}</span>
-                    <span class="text-lg font-bold">{{ d.displayDay }}</span>
+                     :class="['date-card min-w-[65px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all cursor-pointer', activeDate === d.fullDate ? 'active' : 'bg-white text-slate-300 border-slate-100']">
+                    <span class="text-[9px] uppercase font-black opacity-60">{{ d.week }}</span>
+                    <span class="text-lg font-black">{{ d.displayDay }}</span>
                 </div>
             </div>
         </header>
 
         <section class="px-6">
-            <div id="map" class="shadow-lg border border-white"></div>
+            <div id="map" class="shadow-inner border-2 border-slate-50"></div>
         </section>
 
-        <nav class="flex px-8 mt-6 mb-4 space-x-8 text-sm font-bold">
-            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-800 border-b-2 border-slate-800 pb-1' : 'text-slate-300'">行程規劃</button>
-            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-800 border-b-2 border-slate-800 pb-1' : 'text-slate-300'">匯率分帳</button>
-        </nav>
-
-        <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-28">
-            <div v-if="tab === 'plan'" class="space-y-4 animate-fade-in">
-                <div v-for="item in currentItinerary" :key="item.id" class="bg-slate-50 p-5 rounded-[2rem] flex items-start group active:bg-slate-100 transition-colors">
-                    <div class="w-20 pt-1">
-                        <div class="text-xs font-bold text-slate-800">{{ item.time }}</div>
-                        <div v-if="item.temp" class="text-[10px] font-medium mt-1" style="color: var(--mint)">
-                            <i class="fas fa-temperature-low"></i> {{ item.temp }}°C
-                        </div>
-                    </div>
-                    <div class="flex-1 ml-2">
-                        <h4 class="text-sm font-black text-slate-700 mb-1">{{ item.location }}</h4>
-                        <p class="text-[11px] text-slate-400 leading-relaxed">{{ item.note }}</p>
-                    </div>
-                </div>
-                <div v-if="currentItinerary.length === 0" class="text-center py-10 text-slate-300 text-sm italic">
-                    點擊下方 + 開始規劃這天的行程
-                </div>
+        <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-32">
+            <div class="flex items-center justify-between mt-8 mb-6">
+                <h3 class="font-black text-slate-800 tracking-tighter text-lg">DAILY PLAN</h3>
+                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase">{{ activeDateLabel }}</span>
             </div>
 
-            <div v-if="tab === 'split'" class="space-y-6 pt-2">
-                <div class="bg-[#F2F7F6] p-8 rounded-[2.5rem]">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">KRW to TWD</p>
-                    <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-4xl font-light outline-none border-b border-slate-200 pb-2" placeholder="₩ 0">
-                    <div class="mt-6 flex justify-between items-end">
-                        <span class="text-xs text-slate-400">匯率參考 0.024</span>
-                        <div class="text-right">
-                            <span class="text-xs text-slate-400 block mb-1">估計台幣</span>
-                            <span class="text-2xl font-bold" style="color: var(--mint)">NT$ {{ twdOutput }}</span>
+            <div v-if="tab === 'plan'" class="space-y-6">
+                <div v-for="item in currentItinerary" :key="item.id" class="relative pl-8 border-l-2 border-slate-50 pb-2">
+                    <div class="absolute left-[-6px] top-1 w-2.5 h-2.5 rounded-full bg-slate-200 border-2 border-white"></div>
+                    
+                    <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-black text-slate-400">{{ item.time }}</span>
                         </div>
-                    </div>
-                </div>
-                <div class="px-4 mt-8">
-                    <div class="flex justify-between text-xs font-bold text-slate-400 mb-4 uppercase">
-                        <span>分帳人數</span>
-                        <span>{{ splitCount }} 人</span>
-                    </div>
-                    <input v-model="splitCount" type="range" min="1" max="10" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#7FBDAE]">
-                    <div class="mt-6 p-6 bg-slate-900 text-white rounded-3xl flex justify-between items-center shadow-xl">
-                        <span class="text-xs font-bold opacity-60">每人應付</span>
-                        <span class="text-xl font-bold">NT$ {{ perPersonTwd }}</span>
+                        <h4 class="text-base font-black text-slate-800 mb-1">{{ item.location }}</h4>
+                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">{{ item.note }}</p>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <a v-if="item.lat" :href="getNaverLink(item)" target="_blank" class="btn-naver">
+                                <i class="fab fa-neos mr-1.5"></i> NAVER MAP
+                            </a>
+                            <a v-if="item.url" :href="item.url" target="_blank" class="btn-info">
+                                <i class="fas fa-link mr-1.5"></i> 相關資訊
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <div class="fixed bottom-8 left-0 right-0 px-8 flex justify-between items-center z-50">
-            <div class="bg-white/90 backdrop-blur-md w-full h-16 rounded-full shadow-2xl border border-slate-50 flex justify-around items-center px-4">
-                <button class="text-slate-400"><i class="fas fa-map-marked-alt text-lg"></i></button>
-                <button @click="tab = 'plan'" class="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform active:scale-90" style="background-color: var(--mint)">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button @click="tab = 'split'" class="text-slate-400"><i class="fas fa-calculator text-lg"></i></button>
+        <div class="fixed bottom-0 left-0 right-0 h-24 glass-nav z-50 flex justify-around items-center px-10 border-t border-slate-100">
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-calendar-day text-xl"></i></button>
+            <div class="w-12 h-12 bg-emerald-500 rounded-2xl shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform">
+                <i class="fas fa-plus"></i>
+            </div>
+            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-coins text-xl"></i></button>
+        </div>
+
+        <div v-if="tab === 'split'" class="fixed inset-0 bg-white z-[60] p-8 animate-fade-in">
+            <button @click="tab = 'plan'" class="mb-8 text-slate-400"><i class="fas fa-chevron-left mr-2"></i> 返回行程</button>
+            <h2 class="text-3xl font-black mb-8 text-slate-800">換匯分帳</h2>
+            <div class="bg-slate-900 p-10 rounded-[3rem] mb-6 text-white">
+                <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">韓幣 KRW</p>
+                <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-5xl font-light outline-none border-b border-slate-700 pb-4 mb-8" placeholder="0">
+                <div class="flex justify-between items-end">
+                    <span class="text-xs font-bold text-emerald-400">匯率參考 0.024</span>
+                    <p class="text-3xl font-black text-white">NT$ {{ Math.round(krwInput * 0.024) }}</p>
+                </div>
             </div>
         </div>
     </div>
-
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <script>
         const { createApp, ref, onMounted, computed, watch } = Vue;
@@ -109,7 +110,7 @@
                 const tab = ref('plan');
                 const activeDate = ref('2026-03-03');
                 const krwInput = ref(0);
-                const splitCount = ref(2);
+                const seoulTemp = ref('--');
                 let map;
                 let markers = [];
 
@@ -124,16 +125,30 @@
 
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 1, time: '08:30', location: '桃園機場 T2', note: '前往機場報到', lat: 25.0797, lng: 121.2342 },
-                        { id: 2, time: '11:40', location: '仁川機場 ICN T2', note: 'OZ712 韓亞航空 (預計15:25抵達)', lat: 37.4602, lng: 126.4407 },
-                        { id: 3, time: '16:00', location: '機場巴士站', note: '搭乘 6001/6015 往市區 (約1.5小時)', lat: 37.4640, lng: 126.4400 },
-                        { id: 4, time: '18:00', location: 'L7 Myeongdong', note: '飯店 Check-in 樂天 L7 明洞', lat: 37.5607, lng: 126.9861 }
+                        { id: 1, time: '08:30', location: '桃園機場-T2', note: '長榮/韓亞報到櫃檯', lat: 25.0797, lng: 121.2342 },
+                        { id: 2, time: '11:40', location: '仁川機場 ICN-T2', note: '韓亞航空 OZ712 (2h45m)', lat: 37.4602, lng: 126.4407 },
+                        { id: 3, time: '16:00', location: '機場巴士 6001/6015', note: '乘車處 T2 B1 層', url: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4', lat: 37.4640, lng: 126.4400 },
+                        { id: 4, time: '18:00', location: '飯店 L7 Myeongdong', note: '明洞站 9 號出口旁', lat: 37.5612, lng: 126.9869, naverUrl: 'https://naver.me/5A3prvsx' }
                     ]
                 };
 
                 const currentItinerary = computed(() => itineraryData[activeDate.value] || []);
-                const twdOutput = computed(() => Math.round(krwInput.value * 0.024));
-                const perPersonTwd = computed(() => Math.round(twdOutput.value / splitCount.value));
+                const activeDateLabel = computed(() => {
+                    const d = dates.find(d => d.fullDate === activeDate.value);
+                    return d ? `${d.displayDay} March, ${d.week}` : '';
+                });
+
+                const getNaverLink = (item) => {
+                    return item.naverUrl || `https://map.naver.com/v5/search/${encodeURIComponent(item.location)}`;
+                };
+
+                const fetchWeather = async () => {
+                    try {
+                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
+                        const data = await res.json();
+                        seoulTemp.value = Math.round(data.current_weather.temperature);
+                    } catch (e) { seoulTemp.value = '2'; }
+                };
 
                 const initMap = () => {
                     map = L.map('map', { zoomControl: false }).setView([37.5607, 126.9861], 10);
@@ -145,27 +160,20 @@
                     markers.forEach(m => map.removeLayer(m));
                     markers = [];
                     const coords = [];
-
                     currentItinerary.value.forEach(item => {
                         const marker = L.circleMarker([item.lat, item.lng], {
-                            radius: 7, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#7FBDAE'
-                        }).addTo(map).bindPopup(`<b>${item.time}</b><br>${item.location}`);
+                            radius: 8, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#1e293b'
+                        }).addTo(map);
                         markers.push(marker);
                         coords.push([item.lat, item.lng]);
                     });
-
-                    if (coords.length > 0) map.fitBounds(coords, { padding: [40, 40] });
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [50, 50] });
                 };
 
-                watch(activeDate, () => {
-                    updateMarkers();
-                });
+                watch(activeDate, () => updateMarkers());
+                onMounted(() => { initMap(); fetchWeather(); });
 
-                onMounted(() => {
-                    initMap();
-                });
-
-                return { tab, activeDate, dates, currentItinerary, krwInput, twdOutput, splitCount, perPersonTwd };
+                return { tab, activeDate, dates, currentItinerary, activeDateLabel, krwInput, seoulTemp, getNaverLink };
             }
         }).mount('#app');
     </script>
