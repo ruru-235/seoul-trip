@@ -3,76 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul 2026 | My Trip</title>
+    <title>Seoul 2026 | Vegan & Family Trip</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
         .mint-theme { --mint: #7FBDAE; --naver: #03C75A; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        #map { height: 260px; border-radius: 28px; z-index: 10; margin-top: 1rem; }
-        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-        .btn-naver { background: #03C75A; color: white; padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; box-shadow: 0 4px 6px -1px rgba(3, 199, 90, 0.2); }
-        .btn-info { background: #f1f5f9; color: #475569; padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; }
-        .date-card.active { background: #1e293b; color: white; transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        #map { height: 240px; border-radius: 24px; z-index: 10; margin-top: 1rem; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .date-card.active { background: #1e293b; color: white; transform: translateY(-5px); }
+        .btn-naver { background: #03C75A; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; }
+        .btn-bus { background: #3b82f6; color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; }
+        .vegan-tag { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body class="mint-theme">
-    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-xl relative overflow-hidden">
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-2xl relative overflow-hidden">
         
-        <header class="pt-10 px-6">
+        <header class="pt-8 px-6 bg-white">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-black text-slate-800 tracking-tight">SEOUL <span style="color: var(--mint)">2026</span></h1>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Hello Traveler!</p>
+                    <h1 class="text-xl font-black text-slate-800 tracking-tighter">SEOUL <span style="color: var(--mint)">FAMILY VEGAN</span></h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">March 03 - March 08, 2026</p>
                 </div>
-                <div class="text-right bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
-                    <span class="block text-[9px] font-black text-emerald-600 uppercase">Seoul Weather</span>
-                    <span class="text-xl font-black text-emerald-700">{{ seoulTemp }}°C</span>
+                <div class="bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 text-center">
+                    <span class="block text-[8px] font-black text-emerald-600 uppercase">Seoul Now</span>
+                    <span class="text-lg font-black text-emerald-700">{{ seoulTemp }}°C</span>
                 </div>
             </div>
             
-            <div class="flex space-x-3 overflow-x-auto no-scrollbar py-6">
+            <div class="flex space-x-3 overflow-x-auto no-scrollbar py-5">
                 <div v-for="d in dates" :key="d.fullDate" 
                      @click="activeDate = d.fullDate"
-                     :class="['date-card min-w-[65px] h-20 flex flex-col items-center justify-center rounded-2xl border transition-all cursor-pointer', activeDate === d.fullDate ? 'active' : 'bg-white text-slate-300 border-slate-100']">
-                    <span class="text-[9px] uppercase font-black opacity-60">{{ d.week }}</span>
-                    <span class="text-lg font-black">{{ d.displayDay }}</span>
+                     :class="['date-card min-w-[60px] h-16 flex flex-col items-center justify-center rounded-2xl border transition-all cursor-pointer', activeDate === d.fullDate ? 'active' : 'bg-white text-slate-300 border-slate-100']">
+                    <span class="text-[8px] uppercase font-black opacity-60">{{ d.week }}</span>
+                    <span class="text-base font-black">{{ d.displayDay }}</span>
                 </div>
             </div>
         </header>
 
-        <section class="px-6">
-            <div id="map" class="shadow-inner border-2 border-slate-50"></div>
+        <section class="px-6 bg-white pb-2">
+            <div id="map"></div>
         </section>
 
         <main class="flex-1 px-6 overflow-y-auto no-scrollbar pb-32">
-            <div class="flex items-center justify-between mt-8 mb-6">
-                <h3 class="font-black text-slate-800 tracking-tighter text-lg">DAILY PLAN</h3>
-                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase">{{ activeDateLabel }}</span>
+            <div class="flex items-center justify-between mt-6 mb-4">
+                <h3 class="font-black text-slate-800 text-sm">DAY {{ currentDayNumber }} PLAN</h3>
+                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">{{ activeDateLabel }}</span>
             </div>
 
-            <div v-if="tab === 'plan'" class="space-y-6">
-                <div v-for="item in currentItinerary" :key="item.id" class="relative pl-8 border-l-2 border-slate-50 pb-2">
+            <div v-if="tab === 'plan'" class="space-y-4">
+                <div v-for="item in currentItinerary" :key="item.id" class="relative pl-6 border-l-2 border-slate-50">
                     <div class="absolute left-[-6px] top-1 w-2.5 h-2.5 rounded-full bg-slate-200 border-2 border-white"></div>
                     
-                    <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-black text-slate-400">{{ item.time }}</span>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-black text-slate-400">{{ item.time }}</span>
+                            <span v-if="item.isVegan" class="vegan-tag">VEGAN SAFE</span>
                         </div>
-                        <h4 class="text-base font-black text-slate-800 mb-1">{{ item.location }}</h4>
-                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">{{ item.note }}</p>
+                        <h4 class="text-sm font-black text-slate-800 mb-1">{{ item.location }}</h4>
+                        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">{{ item.note }}</p>
                         
                         <div class="flex flex-wrap gap-2">
-                            <a v-if="item.lat" :href="getNaverLink(item)" target="_blank" class="btn-naver">
+                            <a v-if="item.naverUrl" :href="item.naverUrl" target="_blank" class="btn-naver">
                                 <i class="fab fa-neos mr-1.5"></i> NAVER MAP
                             </a>
-                            <a v-if="item.url" :href="item.url" target="_blank" class="btn-info">
-                                <i class="fas fa-link mr-1.5"></i> 相關資訊
+                            <a v-if="item.busUrl" :href="item.busUrl" target="_blank" class="btn-bus">
+                                <i class="fas fa-bus mr-1.5"></i> 巴士資訊
                             </a>
                         </div>
                     </div>
@@ -80,20 +81,20 @@
             </div>
         </main>
 
-        <div class="fixed bottom-0 left-0 right-0 h-24 glass-nav z-50 flex justify-around items-center px-10 border-t border-slate-100">
-            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-calendar-day text-xl"></i></button>
+        <div class="fixed bottom-0 left-0 right-0 h-24 bg-white/90 backdrop-blur-md z-50 flex justify-around items-center px-10 border-t border-slate-100">
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-route text-xl"></i></button>
             <div class="w-12 h-12 bg-emerald-500 rounded-2xl shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform">
                 <i class="fas fa-plus"></i>
             </div>
-            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-coins text-xl"></i></button>
+            <button @click="tab = 'split'" :class="tab === 'split' ? 'text-slate-900' : 'text-slate-300'"><i class="fas fa-wallet text-xl"></i></button>
         </div>
 
         <div v-if="tab === 'split'" class="fixed inset-0 bg-white z-[60] p-8 animate-fade-in">
             <button @click="tab = 'plan'" class="mb-8 text-slate-400"><i class="fas fa-chevron-left mr-2"></i> 返回行程</button>
-            <h2 class="text-3xl font-black mb-8 text-slate-800">換匯分帳</h2>
-            <div class="bg-slate-900 p-10 rounded-[3rem] mb-6 text-white">
+            <h2 class="text-2xl font-black mb-8">換匯計費</h2>
+            <div class="bg-slate-900 p-10 rounded-[2.5rem] text-white">
                 <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">韓幣 KRW</p>
-                <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-5xl font-light outline-none border-b border-slate-700 pb-4 mb-8" placeholder="0">
+                <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-4xl font-light outline-none border-b border-slate-700 pb-4 mb-8" placeholder="0">
                 <div class="flex justify-between items-end">
                     <span class="text-xs font-bold text-emerald-400">匯率參考 0.024</span>
                     <p class="text-3xl font-black text-white">NT$ {{ Math.round(krwInput * 0.024) }}</p>
@@ -125,33 +126,58 @@
 
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 1, time: '08:30', location: '桃園機場-T2', note: '長榮/韓亞報到櫃檯', lat: 25.0797, lng: 121.2342 },
-                        { id: 2, time: '11:40', location: '仁川機場 ICN-T2', note: '韓亞航空 OZ712 (2h45m)', lat: 37.4602, lng: 126.4407 },
-                        { id: 3, time: '16:00', location: '機場巴士 6001/6015', note: '乘車處 T2 B1 層', url: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4', lat: 37.4640, lng: 126.4400 },
-                        { id: 4, time: '18:00', location: '飯店 L7 Myeongdong', note: '明洞站 9 號出口旁', lat: 37.5612, lng: 126.9869, naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 101, time: '08:00', location: '桃園機場-T2', note: '長榮/韓亞報到櫃檯', lat: 25.0797, lng: 121.2342 },
+                        { id: 102, time: '11:40', location: '仁川機場 ICN-T2', note: 'OZ712 (15:25抵達)', lat: 37.4602, lng: 126.4407 },
+                        { id: 103, time: '16:00', location: '機場巴士 6001/6015', note: '前往明洞 L7 飯店 (約 70–90 分)', busUrl: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4', lat: 37.5607, lng: 126.9861 },
+                        { id: 104, time: '18:00', location: '明洞大使館換錢', note: '步行去換現金', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 },
+                        { id: 105, time: '18:30', location: '晚餐: Vegan Kitchen 明洞', note: '韓式素拌飯、煎餅', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.5621, lng: 126.9850 },
+                        { id: 106, time: '19:30', location: 'Olive Young 旗艦店', note: '明洞散步、無肉小吃 (糖餅、雞蛋糕)', lat: 37.5633, lng: 126.9850 }
+                    ],
+                    '2026-03-04': [
+                        { id: 201, time: '11:00', location: 'Isaac Toast 明洞', note: '早餐/午餐', naverUrl: 'https://naver.me/5ssT3F6T', lat: 37.5618, lng: 126.9860 },
+                        { id: 202, time: '13:00', location: '永登浦 ZOOLUNG', note: '時代廣場4樓換票、5樓入場。餵動物設施', naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5170, lng: 126.9030 },
+                        { id: 203, time: '14:30', location: '午餐: Times Square B1', note: 'Papavalley pizza / Abiko curry (無肉選單)', lat: 37.5172, lng: 126.9040 },
+                        { id: 204, time: '18:30', location: '晚餐: Vegetus', note: '純素西式漢堡、義大利麵', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5435, lng: 126.9890 }
+                    ],
+                    '2026-03-05': [
+                        { id: 301, time: '11:00', location: 'Isaac Toast (外帶)', note: '特製: 蛋+起司+蔬菜 (不加火腿培根)', naverUrl: 'https://naver.me/5ssT3F6T', lat: 37.5618, lng: 126.9860 },
+                        { id: 302, time: '12:00', location: '兒童大公園', note: '動物園+遊樂設施。推車友善', naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.5480, lng: 127.0810 },
+                        { id: 303, time: '18:00', location: '晚餐: Vegan Kitchen 明洞', note: '辣炒年糕、不辣湯麵給小孩', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.5621, lng: 126.9850 }
+                    ],
+                    '2026-03-06': [
+                        { id: 401, time: '12:00', location: '北村韓屋村', note: '建議走 Bukchon-ro 主幹道，推車較平順', lat: 37.5820, lng: 126.9830 },
+                        { id: 402, time: '14:00', location: '午餐: Osegye Hyang 五世界香', note: '仁寺洞經典純素韓式', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.5740, lng: 126.9850 },
+                        { id: 403, time: '15:30', location: 'Maru Ja-yeon-sik Gimbap', note: '安國站6號出口附近素飯糰', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p', lat: 37.5750, lng: 126.9860 }
+                    ],
+                    '2026-03-07': [
+                        { id: 501, time: '11:00', location: '樂天百貨 明洞店', note: 'B1-F2 童裝、女裝、玩具區', naverUrl: 'https://naver.me/Gsj23L5e', lat: 37.5650, lng: 126.9810 },
+                        { id: 502, time: '15:00', location: 'Starfield 圖書館', note: 'COEX Mall 內拍照聖地', naverUrl: 'https://naver.me/FqWtKj05', lat: 37.5120, lng: 127.0590 },
+                        { id: 503, time: '17:30', location: '晚餐: Plantude', note: 'COEX Mall B1 (I-111) 純素餐廳', isVegan: true, naverUrl: 'https://naver.me/xNLZtGxo', lat: 37.5110, lng: 127.0580 }
+                    ],
+                    '2026-03-08': [
+                        { id: 601, time: '11:00', location: '明洞最後採買', note: 'Olive Young + 街頭小吃', lat: 37.5633, lng: 126.9850 },
+                        { id: 602, time: '14:30', location: '搭 6015 巴士回機場', note: '前往仁川 T1 辦理長榮 BR159', lat: 37.5607, lng: 126.9861 },
+                        { id: 603, time: '19:45', location: '回台灣飛機', note: '抵達桃園 T2', lat: 37.4602, lng: 126.4407 }
                     ]
                 };
 
                 const currentItinerary = computed(() => itineraryData[activeDate.value] || []);
+                const currentDayNumber = computed(() => dates.findIndex(d => d.fullDate === activeDate.value) + 1);
                 const activeDateLabel = computed(() => {
                     const d = dates.find(d => d.fullDate === activeDate.value);
-                    return d ? `${d.displayDay} March, ${d.week}` : '';
+                    return d ? `${d.displayDay} Mar, ${d.week}` : '';
                 });
-
-                const getNaverLink = (item) => {
-                    return item.naverUrl || `https://map.naver.com/v5/search/${encodeURIComponent(item.location)}`;
-                };
 
                 const fetchWeather = async () => {
                     try {
                         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
                         const data = await res.json();
                         seoulTemp.value = Math.round(data.current_weather.temperature);
-                    } catch (e) { seoulTemp.value = '2'; }
+                    } catch (e) { seoulTemp.value = '3'; }
                 };
 
                 const initMap = () => {
-                    map = L.map('map', { zoomControl: false }).setView([37.5607, 126.9861], 10);
+                    map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 12);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
                     updateMarkers();
                 };
@@ -161,19 +187,21 @@
                     markers = [];
                     const coords = [];
                     currentItinerary.value.forEach(item => {
-                        const marker = L.circleMarker([item.lat, item.lng], {
-                            radius: 8, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#1e293b'
-                        }).addTo(map);
-                        markers.push(marker);
-                        coords.push([item.lat, item.lng]);
+                        if(item.lat && item.lng) {
+                            const marker = L.circleMarker([item.lat, item.lng], {
+                                radius: 7, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#1e293b'
+                            }).addTo(map).bindPopup(`<b>${item.location}</b>`);
+                            markers.push(marker);
+                            coords.push([item.lat, item.lng]);
+                        }
                     });
-                    if (coords.length > 0) map.fitBounds(coords, { padding: [50, 50] });
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [40, 40] });
                 };
 
                 watch(activeDate, () => updateMarkers());
                 onMounted(() => { initMap(); fetchWeather(); });
 
-                return { tab, activeDate, dates, currentItinerary, activeDateLabel, krwInput, seoulTemp, getNaverLink };
+                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, krwInput, seoulTemp };
             }
         }).mount('#app');
     </script>
