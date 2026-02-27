@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul 2026 | 地圖強化版</title>
+    <title>Seoul 2026 | 終極完整行程</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,33 +12,38 @@
     <script src="https://unpkg.com/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background: #fef9f3; touch-action: pan-y; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: #fef9f3; touch-action: pan-y; overflow-x: hidden; }
         .bg-gradient-soft { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 30%, #ff9a9e 60%, #a1c4fd 100%); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .itinerary-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 2rem; transition: all 0.3s ease; }
         .modal-content { background: white; border-radius: 3rem 3rem 0 0; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .date-card.active { background: white; color: #ff7e5f; box-shadow: 0 8px 15px rgba(255, 126, 95, 0.2); transform: scale(1.1); }
-        /* 強化地圖視覺 */
-        #map { height: 200px; border-radius: 25px; z-index: 10; border: 4px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .leaflet-popup-content-wrapper { border-radius: 12px; font-weight: bold; }
+        #map { height: 180px; border-radius: 25px; z-index: 10; border: 4px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .btn-naver { background: #03C75A; color: white; padding: 14px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; display: block; }
+        #swipe-area { min-height: 500px; width: 100%; flex: 1; }
+        .temp-badge { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.4); }
     </style>
 </head>
 <body>
     <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col bg-gradient-soft relative overflow-hidden text-slate-800">
         
         <header class="pt-10 px-6 pb-4">
-            <div class="flex justify-between items-center mb-6 text-white">
+            <div class="flex justify-between items-start mb-6 text-white">
                 <div>
-                    <h1 class="text-3xl font-black italic tracking-tighter text-white">SEOUL <span class="text-yellow-200">2026</span></h1>
-                    <p class="text-[10px] font-bold opacity-90 tracking-widest uppercase">Map Enhanced Version</p>
+                    <h1 class="text-3xl font-black italic tracking-tighter">SEOUL <span class="text-yellow-200">2026</span></h1>
+                    <p class="text-[10px] font-bold opacity-90 tracking-widest uppercase">L7 Myeongdong Stay</p>
                 </div>
-                <div class="bg-white/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/40 text-white">
-                    <span class="text-xl font-black">{{ seoulTemp }}°C</span>
+                <div class="flex flex-col items-end gap-1">
+                    <div class="temp-badge px-3 py-1 rounded-xl flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-thermometer-half text-xs"></i>
+                        <span class="text-lg font-black">7°C</span>
+                    </div>
+                    <div class="px-2 py-0.5 rounded-lg bg-black/10 text-[9px] font-bold">
+                        體感 <span class="text-yellow-200">4°C</span>
+                    </div>
                 </div>
             </div>
-            
             <div class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
                 <div v-for="d in dates" :key="d.fullDate" @click="activeDate = d.fullDate; tab = 'plan'"
                      :class="['date-card min-w-[65px] h-20 flex flex-col items-center justify-center rounded-2xl border border-white/30 transition-all bg-white/20 backdrop-blur-sm', activeDate === d.fullDate ? 'active' : 'text-white/70']">
@@ -50,16 +55,13 @@
 
         <section class="px-6 pb-4 relative">
             <div id="map"></div>
-            <div class="absolute bottom-6 right-8 z-[20] flex flex-col gap-2">
-                <button @click="resetMap" class="w-10 h-10 bg-white/90 rounded-full shadow-lg text-orange-500 flex items-center justify-center border border-white"><i class="fas fa-crosshairs"></i></button>
-            </div>
         </section>
 
-        <main id="swipe-area" class="flex-1 px-6 overflow-y-auto no-scrollbar pb-32">
+        <main id="swipe-area" class="px-6 overflow-y-auto no-scrollbar pb-32">
             <div v-if="tab === 'plan'" class="space-y-4 animate-fade-in">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-black text-white text-lg drop-shadow-sm">DAY {{ currentDayNumber }} <span class="text-white/70 ml-2 text-sm">{{ activeDateLabel }}</span></h3>
-                    <span class="text-[10px] text-white/60">左右滑動切換日期</span>
+                <div class="flex justify-between items-center text-white">
+                    <h3 class="font-black text-lg drop-shadow-sm">DAY {{ currentDayNumber }} <span class="text-white/70 ml-2 text-sm">{{ activeDateLabel }}</span></h3>
+                    <span class="text-[9px] bg-white/20 px-2 py-1 rounded-full border border-white/30 font-bold uppercase tracking-tighter">左右滑動日期</span>
                 </div>
                 
                 <div v-for="item in currentItinerary" :key="item.id" @click="selectedItem = item" class="itinerary-card p-5 shadow-lg active:scale-95 transition-transform">
@@ -68,29 +70,25 @@
                         <div class="flex gap-2 text-sm">
                             <i v-if="item.isVegan" class="fas fa-leaf text-emerald-500"></i>
                             <i v-if="item.isStroller" class="fas fa-baby-carriage text-blue-400"></i>
+                            <i v-if="item.isHotel" class="fas fa-bed text-rose-400"></i>
+                            <i v-if="item.isLaundry" class="fas fa-tshirt text-indigo-400"></i>
+                            <i v-if="item.isTransport" class="fas fa-subway text-slate-400"></i>
                         </div>
                     </div>
-                    <h4 class="text-base font-black text-slate-700">{{ item.location }}</h4>
+                    <h4 class="text-base font-black text-slate-700 leading-tight">{{ item.location }}</h4>
                     <p class="text-xs text-slate-500 line-clamp-2 mt-1 opacity-80 leading-relaxed">{{ item.note }}</p>
                 </div>
             </div>
 
-            <div v-if="tab === 'tools'" class="space-y-6 animate-fade-in">
-                <h2 class="text-2xl font-black text-white">實戰小貼士 & 翻譯</h2>
-                <div class="bg-white/40 p-6 rounded-[3rem] border border-white/50 shadow-xl space-y-4 text-sm text-slate-700">
-                    <div class="bg-white/80 p-4 rounded-2xl">
-                        <p class="font-bold text-orange-600 mb-1">💡 明洞站推車</p>
-                        <p>唯一電梯在 1 號出口 (靠近大Daiso)。乙支路入口站電梯則與樂天百貨連通，更推薦。</p>
-                    </div>
-                    <div class="bg-white/80 p-4 rounded-2xl">
-                        <p class="font-bold text-blue-600 mb-1">地鐵刷卡提醒</p>
-                        <p>部分電梯在閘門外，需先刷卡才能搭乘是正常的，不會扣兩次錢。</p>
-                    </div>
+            <div v-if="tab === 'tools'" class="space-y-4 pt-4 animate-fade-in">
+                <h2 class="text-2xl font-black text-white mb-4">💡 旅途小筆記</h2>
+                <div class="bg-white/90 p-5 rounded-3xl border-l-8 border-orange-400 shadow-sm text-sm">
+                    <p class="font-bold text-orange-600 mb-1">地鐵電梯刷卡</p>
+                    <p>首爾地鐵部分電梯在閘門外，需刷卡進站才能搭乘是正常的，不會扣兩次錢。</p>
                 </div>
             </div>
 
-            <div v-if="tab === 'split'" class="pt-4 text-center">
-                <h2 class="text-4xl font-black text-white mb-10">快速換匯</h2>
+            <div v-if="tab === 'split'" class="pt-4 text-center animate-fade-in">
                 <div class="bg-white/30 p-10 rounded-[3rem] border border-white/40 shadow-2xl">
                     <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-6xl font-light text-center outline-none border-b border-white/50 pb-4 mb-6 text-white" placeholder="0">
                     <p class="text-white text-2xl font-black italic">≈ NT$ {{ Math.round(krwInput * 0.024) }}</p>
@@ -99,18 +97,15 @@
         </main>
 
         <div class="fixed bottom-0 left-0 right-0 h-24 bg-white/10 backdrop-blur-xl z-[100] flex justify-around items-center px-10 border-t border-white/30">
-            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-white' : 'text-white/40'"><i class="fas fa-map-marked-alt text-2xl"></i></button>
-            <button @click="tab = 'tools'" class="w-16 h-16 bg-gradient-to-tr from-orange-400 to-rose-400 rounded-full shadow-lg flex items-center justify-center text-white -mt-10 border-4 border-white"><i class="fas fa-plus text-xl"></i></button>
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-white' : 'text-white/40'"><i class="fas fa-calendar-alt text-2xl"></i></button>
+            <button @click="tab = 'tools'" class="w-16 h-16 bg-gradient-to-tr from-orange-400 to-rose-400 rounded-full shadow-lg flex items-center justify-center text-white -mt-10 border-4 border-white"><i class="fas fa-lightbulb text-xl"></i></button>
             <button @click="tab = 'split'" :class="tab === 'split' ? 'text-white' : 'text-white/40'"><i class="fas fa-wallet text-2xl"></i></button>
         </div>
 
         <div v-if="selectedItem" class="fixed inset-0 z-[110] flex items-end bg-black/60 backdrop-blur-sm" @click.self="selectedItem = null">
             <div class="modal-content w-full p-8 pb-12 text-slate-800 shadow-2xl overflow-y-auto max-h-[90vh]">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-                <div class="flex justify-between items-start mb-4">
-                    <h2 class="text-2xl font-black leading-tight">{{ selectedItem.location }}</h2>
-                    <button @click="selectedItem = null" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fas fa-times"></i></button>
-                </div>
+                <h2 class="text-2xl font-black mb-4 leading-tight">{{ selectedItem.location }}</h2>
                 <div class="bg-orange-50 p-6 rounded-3xl mb-6 border border-orange-100">
                     <p class="text-sm leading-relaxed text-slate-700 font-medium whitespace-pre-line">{{ selectedItem.note }}</p>
                 </div>
@@ -126,7 +121,6 @@
                 const tab = ref('plan');
                 const activeDate = ref('2026-03-03');
                 const krwInput = ref(0);
-                const seoulTemp = ref('2');
                 const selectedItem = ref(null);
                 const dates = [
                     { week: 'Tue', displayDay: '03', fullDate: '2026-03-03' },
@@ -137,32 +131,45 @@
                     { week: 'Sun', displayDay: '08', fullDate: '2026-03-08' }
                 ];
 
+                const hotel = { location: 'L7 MYEONGDONG', isHotel: true, naverUrl: 'https://naver.me/5A3prvsx', lat: 37.5612, lng: 126.9855 };
+
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 101, time: '11:40', location: '仁川機場 OZ712', note: '韓亞航空 OZ712 (15:25抵達)。機場 T2 推車非常平順。', lat: 37.460, lng: 126.440 },
-                        { id: 102, time: '16:00', location: '機場巴士 6001/6015', note: '【明洞 L7 飯店（約 70–90 分）】。巴士下方可放收摺推車。', lat: 37.560, lng: 126.986 },
-                        { id: 103, time: '18:00', location: 'Money Planet 換錢', note: '【明洞站推車電梯】1 號出口 (靠近大Daiso)。', naverUrl: 'https://naver.me/xX7T2DSk', isStroller: true, lat: 37.5611, lng: 126.9830 },
-                        { id: 104, time: '18:30', location: '晚餐: Vegan Kitchen 明洞', note: '純素韓式：拌飯、煎餅、辣炒年糕。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.5621, lng: 126.9850 }
+                        { id: 10, time: '08:00', location: '桃園機場-T2', note: '長榮航空 BR170 (11:40起飛) 前往仁川。', isTransport: true },
+                        { id: 11, time: '17:30', ...hotel, note: '飯店辦理入住，稍作休息。' },
+                        { id: 12, time: '18:00', location: 'Money Planet 換錢', note: '步行約 5-8 分鐘。明洞站 1 號出口旁。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 }
                     ],
                     '2026-03-04': [
-                        { id: 201, time: '12:20', location: '地鐵往 永登浦 ZOOLUNG', note: '【出口】139永登浦站 5號出口。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.517, lng: 126.903 },
-                        { id: 202, time: '13:00', location: 'ZOOLUNG 餵動物', note: '【詳細動線】\n1. 4樓電扶梯旁換票(園區在5樓)\n2. 5號出口→過馬路進新世界百貨→3號門出接時代廣場9號門→上4樓換票→5樓入場。', isStroller: true, lat: 37.5172, lng: 126.904 }
+                        { id: 20, time: '11:00', location: '出發 → 永登浦', note: '4 號線至首爾站轉 1 號線。', isTransport: true },
+                        { id: 21, time: '12:00', location: 'ZOOLUNG 餵動物', note: '【動線】139永登浦站 5號出口步行約8~10分鐘。進新世界百貨後由3號門出，接時代廣場9號門進入，上4樓換票。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5172, lng: 126.904 },
+                        { id: 22, time: '14:00', location: '午餐: 時代廣場 B1', note: '美食街選擇多，適合小孩。' },
+                        { id: 23, time: '15:30', location: '時代廣場 逛街', note: '童裝、女裝集中，推車移動方便。' },
+                        { id: 24, time: '18:30', location: '晚餐: Vegetus', note: '【純素西式】漢堡、義大利麵。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5436, lng: 126.9872 }
                     ],
                     '2026-03-05': [
-                        { id: 301, time: '11:00', location: 'Isaac Toast 明洞', note: '「蛋＋起司＋蔬菜、不加火腿培根」。', lat: 37.5618, lng: 126.986 },
-                        { id: 302, time: '12:00', location: '兒童大公園', note: '【電梯】1號或5號出口。\n動物園＋遊樂設施。', isStroller: true, naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 }
+                        { id: 30, time: '10:00', location: '早餐: Isaac Toast', note: '明洞聖堂店。點餐備註不加肉（素食）。', lat: 37.5618, lng: 126.986 },
+                        { id: 31, time: '11:00', location: '地鐵 → 兒童大公園', note: '【車程 30 分】地鐵 7 號線直達。1 號或 5 號出口有電梯。', isTransport: true, lat: 37.548, lng: 127.081 },
+                        { id: 32, time: '12:00', location: '公園散步/動物園', note: '推車友善環境，可看動物及植物園。', isStroller: true },
+                        { id: 35, time: '18:00', ...hotel, note: '【備註】今晚在飯店 B1 洗衣房洗衣服。', isLaundry: true }
                     ],
                     '2026-03-06': [
-                        { id: 401, time: '12:00', location: '北村韓屋村', note: '【電梯】安國站 5號出口。\n走 Bukchon-ro 較平坦適合推車。', isStroller: true, lat: 37.582, lng: 126.983 },
-                        { id: 402, time: '14:00', location: '午餐: Osegye Hyang', note: '【仁寺洞純素韓式】15:00-17:00休息。\n另有 마루자연식김밥。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 }
+                        { id: 40, time: '11:30', location: '前往北村韓屋', note: '明洞站 → 安國站【4 號線在忠武路轉 3 號線，約 15 分鐘】。', isTransport: true },
+                        { id: 41, time: '12:00', location: '北村韓屋村散步', note: '從安國站 2 號出口走到北村，先走主幹道 Bukchon-ro 一帶，這條路相對寬、平，比較適合推車。小孩可以坐推車看房子。', isStroller: true, lat: 37.582, lng: 126.983 },
+                        { id: 42, time: '14:00', location: '午餐: Osegye Hyang', note: '（仁寺洞純素韓式）從北村走下來約 10–15 分鐘。建議 14:00 左右到剛好避開休息時間(15:00–17:00)。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
+                        { id: 43, time: '15:30', location: '仁寺洞慢逛', note: '推車慢慢逛、喝咖啡，小孩在推車睡覺或吃點心。' },
+                        { id: 44, time: '17:00', location: '買晚餐: Maru 飯捲', note: '安國站 6 號出口布帳馬車。買純素飯捲回飯店。', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p', lat: 37.5735, lng: 126.9848 },
+                        { id: 45, time: '17:30', ...hotel, note: '抵達飯店休息。' }
                     ],
                     '2026-03-07': [
-                        { id: 501, time: '11:00', location: '樂天百貨 明洞', note: '【電梯】乙支路入口站 1或7號出口。', isStroller: true, lat: 37.565, lng: 126.981 },
-                        { id: 502, time: '15:00', location: 'Starfield 圖書館', note: '【電梯】三成站 5、6號出口連通。', isStroller: true, lat: 37.512, lng: 127.059 },
-                        { id: 503, time: '17:30', location: '晚餐: Plantude', note: 'COEX Mall B1 (I-111)。純素餐廳。', isVegan: true, naverUrl: 'https://naver.me/xNLZtGxo', lat: 37.511, lng: 127.058 }
+                        { id: 50, time: '11:00', location: '步行至樂天百貨', note: '從 L7 飯店步行前往，約 10-12 分鐘，路程平坦適合推車。', isStroller: true },
+                        { id: 51, time: '16:00', location: 'COEX 內逛街', note: '【16:00-17:30】包含女裝、雜貨、咖啡廳。', lat: 37.512, lng: 127.059 },
+                        { id: 52, time: '18:30', location: '地鐵回明洞', note: '18:30–19:10 三成站搭 2 號線 → 乙支路入口站（直達32分鐘）下車 → 步行 8 分回 L7 飯店。', isTransport: true },
+                        { id: 53, time: '19:30', ...hotel, note: '【備註】今晚在飯店 B1 洗衣房洗衣服。', isLaundry: true }
                     ],
                     '2026-03-08': [
-                        { id: 601, time: '14:30', location: '機場巴士回程', note: '回仁川 T1。行李艙放推車。', lat: 37.460, lng: 126.440 }
+                        { id: 60, time: '11:00', location: '明洞最後採買', note: '行李寄放櫃台。' },
+                        { id: 61, time: '15:00', location: '前往仁川機場', note: '搭乘 6015 機場巴士。', isTransport: true },
+                        { id: 62, time: '19:45', location: '長榮 BR159', note: '19:45-21:40(2h55m) 回台灣 TPE-T2。' }
                     ]
                 };
 
@@ -172,46 +179,40 @@
                 const currentDayNumber = computed(() => dates.findIndex(d => d.fullDate === activeDate.value) + 1);
                 const activeDateLabel = computed(() => dates.find(d => d.fullDate === activeDate.value)?.displayDay + ' Mar');
 
-                const initMap = () => {
-                    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([37.5665, 126.9780], 12);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png').addTo(map);
-                    markerLayer.addTo(map);
-                    updateMarkers();
-                };
-
                 const updateMarkers = () => {
                     markerLayer.clearLayers();
                     const coords = [];
                     currentItinerary.value.forEach(item => {
                         if(item.lat && item.lng) {
-                            const marker = L.circleMarker([item.lat, item.lng], {
-                                radius: 10, fillColor: '#ff7e5f', color: '#fff', weight: 3, fillOpacity: 1
+                            L.circleMarker([item.lat, item.lng], {
+                                radius: 10, fillColor: item.isHotel ? '#f43f5e' : '#ff7e5f', color: '#fff', weight: 3, fillOpacity: 1
                             }).bindPopup(item.location).addTo(markerLayer);
                             coords.push([item.lat, item.lng]);
                         }
                     });
-                    if (coords.length > 0) map.fitBounds(coords, { padding: [50, 50] });
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [40, 40] });
                 };
 
-                const resetMap = () => updateMarkers();
-                const nextDay = () => {
+                const swipe = (dir) => {
                     const idx = dates.findIndex(d => d.fullDate === activeDate.value);
-                    if (idx < dates.length - 1) activeDate.value = dates[idx + 1].fullDate;
-                };
-                const prevDay = () => {
-                    const idx = dates.findIndex(d => d.fullDate === activeDate.value);
-                    if (idx > 0) activeDate.value = dates[idx - 1].fullDate;
+                    if (dir === 'L' && idx < dates.length - 1) activeDate.value = dates[idx + 1].fullDate;
+                    if (dir === 'R' && idx > 0) activeDate.value = dates[idx - 1].fullDate;
                 };
 
                 onMounted(() => {
-                    initMap();
+                    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([37.5612, 126.9855], 13);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png').addTo(map);
+                    markerLayer.addTo(map);
+                    updateMarkers();
+
                     const mc = new Hammer(document.getElementById('swipe-area'));
-                    mc.on("swipeleft", nextDay);
-                    mc.on("swiperight", prevDay);
+                    mc.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+                    mc.on("swipeleft", () => swipe('L'));
+                    mc.on("swiperight", () => swipe('R'));
                 });
 
                 watch(activeDate, updateMarkers);
-                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, krwInput, seoulTemp, selectedItem, resetMap };
+                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, krwInput, selectedItem };
             }
         }).mount('#app');
     </script>
