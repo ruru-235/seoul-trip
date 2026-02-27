@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul 2026 | 完整修正版</title>
+    <title>Seoul 2026 | 完整終極版</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -21,7 +21,6 @@
         .date-card.active { background: white; color: #ff7e5f; box-shadow: 0 8px 15px rgba(255, 126, 95, 0.2); transform: scale(1.1); }
         #map { height: 180px; border-radius: 25px; z-index: 10; border: 4px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .btn-naver { background: #03C75A; color: white; padding: 14px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; display: block; }
-        .tip-box { background: rgba(255,255,255,0.9); border-radius: 1.5rem; padding: 1rem; border-left: 5px solid #ff7e5f; }
     </style>
 </head>
 <body>
@@ -33,8 +32,9 @@
                     <h1 class="text-3xl font-black italic tracking-tighter">SEOUL <span class="text-yellow-200">2026</span></h1>
                     <p class="text-[10px] font-bold opacity-90 tracking-widest uppercase">L7 Myeongdong Stay</p>
                 </div>
-                <div class="bg-white/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/40">
-                    <span class="text-xl font-black">7°C</span>
+                <div class="bg-white/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/40 text-center">
+                    <p class="text-[8px] font-bold leading-none">3月均溫</p>
+                    <span class="text-xl font-black">2°~10°</span>
                 </div>
             </div>
             <div class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
@@ -48,9 +48,6 @@
 
         <section class="px-6 pb-4 relative">
             <div id="map"></div>
-            <div class="absolute bottom-6 right-8 z-[20]">
-                <button @click="resetMap" class="w-10 h-10 bg-white/90 rounded-full shadow-lg text-orange-500 flex items-center justify-center border border-white"><i class="fas fa-hotel"></i></button>
-            </div>
         </section>
 
         <main id="swipe-area" class="flex-1 px-6 overflow-y-auto no-scrollbar pb-32">
@@ -67,25 +64,24 @@
                             <i v-if="item.isTransport" class="fas fa-subway text-slate-400"></i>
                         </div>
                     </div>
-                    <h4 class="text-base font-black text-slate-700">{{ item.location }}</h4>
+                    <h4 class="text-base font-black text-slate-700 leading-tight">{{ item.location }}</h4>
                     <p class="text-xs text-slate-500 line-clamp-2 mt-1 opacity-80 leading-relaxed">{{ item.note }}</p>
                 </div>
             </div>
 
             <div v-if="tab === 'tools'" class="space-y-4 animate-fade-in pt-4">
                 <h2 class="text-2xl font-black text-white mb-4">💡 實戰小貼士</h2>
-                <div class="tip-box shadow-sm">
-                    <p class="font-bold text-orange-600 mb-1"><i class="fas fa-baby-carriage mr-2"></i>明洞站 1 號出口 (電梯)</p>
-                    <p class="text-sm text-slate-600 leading-relaxed">唯一電梯口，靠近大 Daiso。飯店門口的 9 號出口只有樓梯。</p>
+                <div class="bg-white/90 p-5 rounded-3xl border-l-8 border-orange-400 shadow-sm">
+                    <p class="font-bold text-orange-600 mb-1">明洞 1 號出口 (電梯)</p>
+                    <p class="text-sm text-slate-600">唯一電梯口，靠近大 Daiso。推車回飯店請走這裡。</p>
                 </div>
-                <div class="tip-box shadow-sm" style="border-left-color: #4299e1;">
-                    <p class="font-bold text-blue-600 mb-1"><i class="fas fa-credit-card mr-2"></i>地鐵刷卡</p>
-                    <p class="text-sm text-slate-600 leading-relaxed">部分電梯在閘門外，需刷卡進站才能搭乘是正常的，不會扣兩次錢。</p>
+                <div class="bg-white/90 p-5 rounded-3xl border-l-8 border-blue-400 shadow-sm">
+                    <p class="font-bold text-blue-600 mb-1">北村推車路線</p>
+                    <p class="text-sm text-slate-600">沿主幹道 Bukchon-ro 走。路寬且平，適合推車小孩看房子。</p>
                 </div>
             </div>
 
             <div v-if="tab === 'split'" class="pt-4 text-center">
-                <h2 class="text-4xl font-black text-white mb-10">快速換匯</h2>
                 <div class="bg-white/30 p-10 rounded-[3rem] border border-white/40 shadow-2xl">
                     <input v-model.number="krwInput" type="number" class="w-full bg-transparent text-6xl font-light text-center outline-none border-b border-white/50 pb-4 mb-6 text-white" placeholder="0">
                     <p class="text-white text-2xl font-black italic">≈ NT$ {{ Math.round(krwInput * 0.024) }}</p>
@@ -102,14 +98,11 @@
         <div v-if="selectedItem" class="fixed inset-0 z-[110] flex items-end bg-black/60 backdrop-blur-sm" @click.self="selectedItem = null">
             <div class="modal-content w-full p-8 pb-12 text-slate-800 shadow-2xl overflow-y-auto max-h-[90vh]">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-                <div class="flex justify-between items-start mb-4">
-                    <h2 class="text-2xl font-black leading-tight">{{ selectedItem.location }}</h2>
-                    <button @click="selectedItem = null" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fas fa-times"></i></button>
-                </div>
+                <h2 class="text-2xl font-black mb-4 leading-tight">{{ selectedItem.location }}</h2>
                 <div class="bg-orange-50 p-6 rounded-3xl mb-6 border border-orange-100">
                     <p class="text-sm leading-relaxed text-slate-700 font-medium whitespace-pre-line">{{ selectedItem.note }}</p>
                 </div>
-                <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver shadow-md"><i class="fab fa-neos mr-2"></i> 開啟 NAVER MAP 導航</a>
+                <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver shadow-md"><i class="fab fa-neos mr-2"></i> 開啟 NAVER MAP</a>
             </div>
         </div>
     </div>
@@ -135,44 +128,44 @@
 
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 10, time: '08:00', location: '前往桃園機場 T2', note: '抓 1 小時車程。', isTransport: true },
-                        { id: 11, time: '11:40', location: '仁川機場 OZ712', note: '韓亞航空 (15:25 抵達)。', lat: 37.460, lng: 126.440 },
-                        { id: 12, time: '17:30', ...hotel, note: '【辦理入住】下巴士後過馬路即達。休息片刻。' },
-                        { id: 13, time: '18:00', location: 'Money Planet 換錢', note: '【步行】飯店出發約 5-8 分鐘。明洞站 1 號出口旁。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 },
-                        { id: 14, time: '19:30', location: 'Olive Young 旗艦店', note: '明洞街頭小吃巡禮與散步。' }
+                        { id: 10, time: '08:00', location: '前往桃園機場-T2', note: '抓 1 小時車程。', isTransport: true },
+                        { id: 11, time: '17:30', ...hotel, note: '【入住休息】Naver: https://naver.me/5A3prvsx' },
+                        { id: 12, time: '18:00', location: 'Money Planet 換錢', note: '【步行】飯店出發去換現金。Naver: https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 },
+                        { id: 13, time: '19:30', location: 'Olive Young 旗艦店', note: '明洞街頭散步、小吃。', lat: 37.5620, lng: 126.9850 }
                     ],
                     '2026-03-04': [
-                        { id: 20, time: '11:00', location: '飯店出發 → 永登浦', note: '【車程 40-50 分】4號線→首爾站轉1號線。', isTransport: true },
-                        { id: 21, time: '12:00', location: 'ZOOLUNG 餵動物', note: '【出口與動線】\n5號出口→進新世界百貨→3號門出接時代廣場9號門→上4樓換票→5樓入場。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5172, lng: 126.904 },
-                        { id: 22, time: '14:00', location: '時代廣場 B1 午餐', note: '美食街選擇多。' },
-                        { id: 23, time: '15:30', location: '時代廣場 逛街', note: '童裝＋女裝＋玩具，推車超平順。' },
-                        { id: 24, time: '17:30', location: '地鐵回明洞', note: '【建議路線】1 號線至首爾站轉 4 號線。', isTransport: true },
-                        { id: 25, time: '18:30', location: '晚餐: Vegetus', note: '【純素西式】漢堡、義大利麵。可選外送。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5436, lng: 126.9872 },
-                        { id: 26, time: '19:30', ...hotel, note: '回飯店休息。' }
+                        { id: 20, time: '11:00', location: '飯店出發 → 永登浦', note: '地鐵前往 永登浦 ZOOLUNG。', isTransport: true },
+                        { id: 21, time: '12:00', location: 'ZOOLUNG 餵動物', note: '【動線】139永登浦站 5號出口步行8~10分鐘。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5172, lng: 126.904 },
+                        { id: 22, time: '14:00', location: '午餐: 百貨 B1', note: '美食街用餐。' },
+                        { id: 23, time: '15:30', location: 'Times Square 逛街', note: '童裝＋女裝＋玩具。' },
+                        { id: 24, time: '17:30', location: '地鐵回明洞', note: '回程約 40 分鐘。', isTransport: true },
+                        { id: 25, time: '18:30', location: '晚餐: Vegetus', note: '【純素西式】有漢堡、義大利麵。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5436, lng: 126.9872 }
                     ],
                     '2026-03-05': [
-                        { id: 30, time: '11:00', location: '早餐: Isaac Toast', note: '買吐司去公園：蛋＋起司＋蔬菜。', lat: 37.5618, lng: 126.986 },
-                        { id: 31, time: '12:00', location: '兒童大公園', note: '【車程 30 分】地鐵 7 號線直達。1 號或 5 號出口有電梯。', isStroller: true, naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 }
+                        { id: 30, time: '10:00', location: '早餐: Isaac Toast', note: '明洞聖堂店。點餐不加肉(素)。', lat: 37.5618, lng: 126.986 },
+                        { id: 31, time: '11:00', location: '地鐵 → 兒童大公園', note: '【車程 30 分】7 號線兒童大公園站。1、5 號出口有電梯。', isTransport: true },
+                        { id: 32, time: '12:00', location: '動物園 & 植物園', note: '免費入場，推車友善。', isStroller: true, lat: 37.548, lng: 127.081 },
+                        { id: 33, time: '14:00', location: '午餐: 公園美食街', note: '或附近小吃店。' },
+                        { id: 34, time: '15:30', location: '遊樂園體驗', note: '小孩玩簡單設施。' },
+                        { id: 35, time: '17:30', location: '回程明洞', note: '地鐵回飯店。', isTransport: true }
                     ],
                     '2026-03-06': [
-                        { id: 40, time: '11:00', location: '飯店出發 → 安國', note: '【車程 15 分】4號線→忠武路轉3號線。', isTransport: true },
-                        { id: 41, time: '12:00', location: '北村韓屋村散步', note: '【推車】走 Bukchon-ro 主幹道。避開陡坡巷弄。', isStroller: true, lat: 37.582, lng: 126.983 },
-                        { id: 42, time: '14:00', location: '午餐: Osegye Hyang', note: '【仁寺洞純素】15:00-17:00 休息。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
-                        { id: 43, time: '15:30', location: '仁寺洞慢逛', note: '喝咖啡、小孩午睡。' },
-                        { id: 44, time: '17:00', location: '買飯捲: Maru Jayeonsik', note: '【安國站 6 號出口】純素飯捲布帳馬車。', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p', lat: 37.5735, lng: 126.9848 },
-                        { id: 45, time: '18:00', ...hotel, note: '回到飯店休息。' }
+                        { id: 40, time: '11:00', location: '飯店出發 → 安國', note: '4 號線忠武路轉 3 號線(15分)。', isTransport: true },
+                        { id: 41, time: '12:00', location: '北村韓屋村散步', note: '【推車】走主幹道 Bukchon-ro 避開陡坡。', isStroller: true, lat: 37.582, lng: 126.983 },
+                        { id: 42, time: '14:00', location: '午餐: Osegye Hyang', note: '【仁寺洞純素】Naver: https://naver.me/xVBx7LH9', isVegan: true, lat: 37.574, lng: 126.985 },
+                        { id: 43, time: '17:00', location: '買飯捲: Maru Jayeonsik', note: '安國站 6 號出口純素飯捲。', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p', lat: 37.5735, lng: 126.9848 },
+                        { id: 44, time: '18:00', ...hotel, note: '回到飯店休息。' }
                     ],
                     '2026-03-07': [
-                        { id: 50, time: '15:00', location: 'COEX 圖書館', note: '三成站 5、6 號出口。', lat: 37.512, lng: 127.059 },
-                        { id: 51, time: '16:00', location: 'COEX 逛街', note: '【16:00-17:30】女裝、雜貨、咖啡廳。' },
-                        { id: 52, time: '18:30', location: '地鐵回明洞', note: '【車程 40 分】2 號線(三成) → 乙支路入口站。步行 8 分鐘回 L7 飯店。', isTransport: true },
+                        { id: 50, time: '15:00', location: 'COEX 星空圖書館', note: '三成站 5、6 號出口。', lat: 37.512, lng: 127.059 },
+                        { id: 51, time: '16:00', location: 'COEX 內逛街', note: '【16:00-17:30】女裝、雜貨、咖啡廳。' },
+                        { id: 52, time: '18:30', location: '地鐵回明洞', note: '2號線→乙支路入口站。步行 8 分鐘回 L7 飯店。', isTransport: true },
                         { id: 53, time: '19:00', ...hotel, note: '抵達飯店。' }
                     ],
                     '2026-03-08': [
-                        { id: 60, time: '11:00', location: '退房/最後採買', note: '明洞小吃、Olive Young。行李寄放飯店。' },
-                        { id: 61, time: '14:30', location: '機場巴士 6015', note: '飯店門口搭車回仁川。', isTransport: true, lat: 37.460, lng: 126.440 },
-                        { id: 62, time: '16:00', location: '機場報到/安檢', note: 'ICN-T1。' },
-                        { id: 63, time: '19:45', location: '長榮 BR159', note: '19:45 起飛 → 21:40 抵達台灣 TPE-T2。' }
+                        { id: 60, time: '11:00', location: '退房/最後逛明洞', note: 'Olive Young + 街頭小吃。' },
+                        { id: 61, time: '14:30', location: '搭 6015 機場巴士', note: '抓 1.5 小時回仁川。', isTransport: true, lat: 37.460, lng: 126.440 },
+                        { id: 62, time: '19:45', location: '長榮 BR159', note: '19:45-21:40(2h55m) 回台灣 TPE-T2。' }
                     ]
                 };
 
@@ -203,7 +196,6 @@
                     if (coords.length > 0) map.fitBounds(coords, { padding: [50, 50] });
                 };
 
-                const resetMap = () => map.setView([37.5612, 126.9855], 16);
                 const swipe = (dir) => {
                     const idx = dates.findIndex(d => d.fullDate === activeDate.value);
                     if (dir === 'L' && idx < dates.length - 1) activeDate.value = dates[idx + 1].fullDate;
@@ -218,7 +210,7 @@
                 });
 
                 watch(activeDate, updateMarkers);
-                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, krwInput, selectedItem, resetMap };
+                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, krwInput, selectedItem };
             }
         }).mount('#app');
     </script>
