@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul 2026 | 終極完整行程</title>
+    <title>Seoul 2026 | 親子素食之旅</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -24,7 +24,6 @@
         #swipe-area { min-height: 500px; width: 100%; flex: 1; }
         .temp-badge { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .tool-card { background: white; border-radius: 20px; padding: 18px; margin-bottom: 16px; border-left: 6px solid #ff9a9e; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .translation-card { background: #fff5f5; border: 2px dashed #ff9a9e; border-radius: 15px; padding: 12px; }
     </style>
 </head>
 <body>
@@ -40,9 +39,6 @@
                     <div class="temp-badge px-3 py-1 rounded-xl flex items-center gap-2 shadow-sm">
                         <i class="fas fa-thermometer-half text-xs"></i>
                         <span class="text-lg font-black">7°C</span>
-                    </div>
-                    <div class="px-2 py-0.5 rounded-lg bg-black/10 text-[9px] font-bold">
-                        體感 <span class="text-yellow-200">4°C</span>
                     </div>
                 </div>
             </div>
@@ -63,7 +59,7 @@
             <div v-if="tab === 'plan'" class="space-y-4 animate-fade-in">
                 <div class="flex justify-between items-center text-white">
                     <h3 class="font-black text-lg drop-shadow-sm">DAY {{ currentDayNumber }} <span class="text-white/70 ml-2 text-sm">{{ activeDateLabel }}</span></h3>
-                    <span class="text-[9px] bg-white/20 px-2 py-1 rounded-full border border-white/30 font-bold uppercase tracking-tighter">左右滑動日期</span>
+                    <span class="text-[9px] bg-white/20 px-2 py-1 rounded-full border border-white/30 font-bold uppercase tracking-tighter">左右滑動切換日期</span>
                 </div>
                 
                 <div v-for="item in currentItinerary" :key="item.id" @click="selectedItem = item" class="itinerary-card p-5 shadow-lg active:scale-95 transition-transform">
@@ -73,8 +69,8 @@
                             <i v-if="item.isVegan" class="fas fa-leaf text-emerald-500"></i>
                             <i v-if="item.isStroller" class="fas fa-baby-carriage text-blue-400"></i>
                             <i v-if="item.isHotel" class="fas fa-bed text-rose-400"></i>
+                            <i v-if="item.isTransport" class="fas fa-bus-alt text-slate-400"></i>
                             <i v-if="item.isLaundry" class="fas fa-tshirt text-indigo-400"></i>
-                            <i v-if="item.isTransport" class="fas fa-subway text-slate-400"></i>
                         </div>
                     </div>
                     <h4 class="text-base font-black text-slate-700 leading-tight">{{ item.location }}</h4>
@@ -84,39 +80,13 @@
 
             <div v-if="tab === 'tools'" class="space-y-4 pt-4 animate-fade-in">
                 <h2 class="text-2xl font-black text-white mb-4">💡 旅途工具箱</h2>
-                
                 <div class="tool-card">
-                    <p class="font-bold text-emerald-600 mb-2"><i class="fas fa-language mr-2"></i>素食點餐翻譯小卡</p>
-                    <div class="translation-card space-y-3">
-                        <div>
-                            <p class="text-[10px] text-slate-400 uppercase font-bold italic">我是素食者</p>
-                            <p class="text-lg font-black text-slate-800">저는 채식주의자입니다.</p>
-                        </div>
-                        <div class="border-t border-red-100 pt-2">
-                            <p class="text-[10px] text-slate-400 uppercase font-bold italic">不要肉/火腿/蛋</p>
-                            <p class="text-sm font-bold text-slate-700">고기, 햄, 계란은 빼주세요.</p>
-                        </div>
-                    </div>
+                    <p class="font-bold text-emerald-600 mb-1"><i class="fas fa-language mr-2"></i>素食溝通 (無五辛/肉)</p>
+                    <p class="text-sm">고기, 햄, 계란, 오신채(마늘,파)는 빼주세요.<br>(請去掉肉、火腿、蛋、五辛)</p>
                 </div>
-
                 <div class="tool-card">
-                    <p class="font-bold text-blue-600 mb-1"><i class="fas fa-baby-carriage mr-2"></i>明洞 1 號出口 (電梯)</p>
-                    <p>這是明洞站推車唯一的救星（靠近大 Daiso）。其餘出口多為階梯，請務必認明 1 號出口搭乘電梯。</p>
-                </div>
-
-                <div class="tool-card">
-                    <p class="font-bold text-orange-600 mb-1"><i class="fas fa-id-card mr-2"></i>地鐵電梯刷卡免驚</p>
-                    <p>首爾地鐵部分電梯在閘門外，需刷卡進站才能搭乘是正常的。這不會重複扣款，請放心刷卡使用。</p>
-                </div>
-
-                <div class="tool-card">
-                    <p class="font-bold text-indigo-600 mb-1"><i class="fas fa-bus mr-2"></i>機場巴士與推車</p>
-                    <p>搭乘機場巴士（6001/6015）時，司機會主動下車幫忙收推車入行李艙，下車也會幫忙取出。</p>
-                </div>
-
-                <div class="tool-card">
-                    <p class="font-bold text-slate-700 mb-1">👕 飯店洗衣房 (L7)</p>
-                    <p>位於飯店 B1 層。洗烘衣分開計費，請準備 500 韓元硬幣或現場刷卡。👕</p>
+                    <p class="font-bold text-blue-600 mb-1"><i class="fas fa-baby-carriage mr-2"></i>明洞電梯救星</p>
+                    <p class="text-sm">明洞站 1 號出口 (靠近大 Daiso) 有電梯。機場巴士下車後，推車可由司機協助收納。</p>
                 </div>
             </div>
 
@@ -127,7 +97,6 @@
                     <p class="text-white/60 text-sm mb-1">約等於台幣 NT$</p>
                     <p class="text-white text-4xl font-black italic">≈ {{ Math.round(krwInput * 0.024).toLocaleString() }}</p>
                 </div>
-                <p class="mt-6 text-white/50 text-[10px]">參考匯率: 0.024</p>
             </div>
         </main>
 
@@ -144,7 +113,10 @@
                 <div class="bg-orange-50 p-6 rounded-3xl mb-6 border border-orange-100">
                     <p class="text-sm leading-relaxed text-slate-700 font-medium whitespace-pre-line">{{ selectedItem.note }}</p>
                 </div>
-                <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver shadow-md"><i class="fab fa-neos mr-2"></i> 開啟 NAVER MAP 導航</a>
+                <div class="space-y-3">
+                    <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver shadow-md"><i class="fab fa-neos mr-2"></i> 開啟 NAVER MAP 導航</a>
+                    <button @click="selectedItem = null" class="w-full py-4 text-slate-400 font-bold">關閉</button>
+                </div>
             </div>
         </div>
     </div>
@@ -166,35 +138,44 @@
                     { week: 'Sun', displayDay: '08', fullDate: '2026-03-08' }
                 ];
 
-                const hotel = { location: 'L7 MYEONGDONG', isHotel: true, naverUrl: 'https://naver.me/5A3prvsx', lat: 37.5612, lng: 126.9855 };
+                const hotelInfo = { location: 'L7 MYEONGDONG', naverUrl: 'https://naver.me/5A3prvsx', lat: 37.5612, lng: 126.9855, isHotel: true };
 
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 10, time: '08:00', location: '桃園機場-T2', note: '長榮航空 BR170 (11:40起飛) 前往仁川。', isTransport: true },
-                        { id: 11, time: '17:30', ...hotel, note: '飯店辦理入住，洗衣房在 B1。', isLaundry: true },
-                        { id: 12, time: '18:00', location: 'Money Planet 換錢', note: '步行約 5-8 分鐘。明洞站 1 號出口旁。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 }
+                        { id: 10, time: '11:40', location: '韓亞航空 OZ712', note: '桃園 T2 出發，15:25 抵達仁川 T2。', isTransport: true },
+                        { id: 11, time: '16:00', location: '機場巴士 6001/6015', note: '前往明洞，車程約 70-90 分鐘。司機會幫忙收推車。', isTransport: true, naverUrl: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4' },
+                        { id: 12, time: '17:30', ...hotelInfo, note: 'Check-in 辦理入住。' },
+                        { id: 13, time: '18:00', location: 'Money Planet 換錢', note: '步行去換現金。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.5611, lng: 126.9830 },
+                        { id: 14, time: '18:30', location: '晚餐: Vegan Kitchen', note: '明洞純素餐點。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.5605, lng: 126.9860 }
                     ],
                     '2026-03-04': [
-                        { id: 20, time: '11:00', location: '出發 → 永登浦', note: '4 號線至首爾站轉 1 號線。', isTransport: true },
-                        { id: 21, time: '12:00', location: 'ZOOLUNG 餵動物', note: '時代廣場 9 號門進入 4 樓換票。推車友善。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5172, lng: 126.904 },
-                        { id: 24, time: '18:30', location: '晚餐: Vegetus', note: '純素漢堡。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5436, lng: 126.9872 }
+                        { id: 20, time: '11:00', location: '出發前往 永登浦', note: '地鐵 1 號線永登浦站 5 號出口，步行約 10 分鐘。', isTransport: true },
+                        { id: 21, time: '12:00', location: 'ZOOLUNG 永登浦', note: '4 樓換票(加購飼料) → 5 樓入口。推車友善。', isStroller: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.5172, lng: 126.904 },
+                        { id: 22, time: '14:00', location: '午餐: Times Square B1', note: '推薦：Papavalley pizza / Abiko curry (去肉)。', isVegan: true },
+                        { id: 23, time: '18:30', location: '晚餐: Vegetus', note: '純素西式：漢堡、義大利麵。\n地鐵回程約 40-50 分鐘。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5436, lng: 126.9872 }
                     ],
                     '2026-03-05': [
-                        { id: 30, time: '10:00', location: '早餐: Isaac Toast', note: '客製口訣：蛋+起司+蔬菜，不加肉！', isVegan: true, lat: 37.5618, lng: 126.986 },
-                        { id: 31, time: '12:00', location: '兒童大公園', note: '免費動物園，推車友善放電首選。', isStroller: true, lat: 37.548, lng: 127.081 },
-                        { id: 35, time: '18:00', ...hotel, note: '今晚洗衣服。👕', isLaundry: true }
+                        { id: 30, time: '11:00', location: 'Isaac Toast 明洞', note: '口訣：蛋+起司+蔬菜，不加火腿培根。', isVegan: true, naverUrl: 'https://naver.me/5ssT3F6T', lat: 37.5618, lng: 126.986 },
+                        { id: 31, time: '12:00', location: '兒童大公園', note: '地鐵車程 30 分鐘。動物園+遊樂設施，放電首選。', isStroller: true, naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 },
+                        { id: 32, time: '18:00', location: '晚餐: Vegan Kitchen', note: '推薦：韓式素拌飯、煎餅、辣炒年糕、不辣湯麵。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT' },
+                        { id: 33, time: '20:00', ...hotelInfo, note: '回飯店洗衣服 (B1)。', isLaundry: true }
                     ],
                     '2026-03-06': [
-                        { id: 41, time: '12:00', location: '北村韓屋村散步', note: '主幹道平坦，推車 OK。', isStroller: true, lat: 37.582, lng: 126.983 },
-                        { id: 42, time: '14:00', location: '午餐: Osegye Hyang', note: '純素韓式。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 }
+                        { id: 40, time: '11:00', location: '前往 北村韓屋村', note: '地鐵安國站 2 號或 4 號線轉 3 號線。', isTransport: true },
+                        { id: 41, time: '12:00', location: '北村散步', note: '走 Bukchon-ro 主幹道較平坦適推車。', isStroller: true, lat: 37.582, lng: 126.983 },
+                        { id: 42, time: '14:00', location: '午餐: Osegye Hyang', note: '仁寺洞純素韓式。15:00 休息，建議準時抵達。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
+                        { id: 43, time: '17:00', location: '外帶晚餐: Maru 素食飯捲', note: '安國站 6 號出口。', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p' }
                     ],
                     '2026-03-07': [
-                        { id: 50, time: '11:00', location: '樂天百貨 Myeongdong', note: '適合推車逛街買童裝。', isStroller: true, lat: 37.565, lng: 126.981 },
-                        { id: 51, time: '16:00', location: 'COEX 星空圖書館', note: '必拍景點。', lat: 37.512, lng: 127.059 }
+                        { id: 50, time: '11:00', location: '樂天百貨 明洞', note: 'B1-F2 童裝、玩具區。', isStroller: true, naverUrl: 'https://naver.me/Gsj23L5e', lat: 37.565, lng: 126.981 },
+                        { id: 51, time: '13:30', location: '地鐵前往 COEX', note: '乙支路入口站搭 2 號線直達三成站(32分)。', isTransport: true },
+                        { id: 52, time: '15:00', location: '星空圖書館', note: 'COEX Mall 內拍照景點。', naverUrl: 'https://naver.me/FqWtKj05', lat: 37.512, lng: 127.059 },
+                        { id: 53, time: '17:30', location: '晚餐: Plantude', note: 'COEX B1 高評價純素餐廳。', isVegan: true, naverUrl: 'https://naver.me/xNLZtGxo' }
                     ],
                     '2026-03-08': [
-                        { id: 61, time: '15:00', location: '搭乘機場巴士', note: '明洞 L7 站點。司機會搬推車。', isTransport: true },
-                        { id: 62, time: '19:45', location: '長榮 BR159', note: '回台灣。' }
+                        { id: 60, time: '11:00', location: '退房/明洞散步', note: 'Olive Young 最後補貨、吃街頭小吃。', isHotel: true },
+                        { id: 61, time: '14:30', location: '機場巴士 6015', note: '回仁川機場，預留 1.5 小時車程。', isTransport: true },
+                        { id: 62, time: '19:45', location: '長榮航空 BR159', note: '仁川 T1 出發，21:40 抵達台灣。' }
                     ]
                 };
 
