@@ -1,9 +1,11 @@
+最新 堪用版
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seoul 2026 | 親子素食之旅</title>
+    <title>Seoul 2026 | 換匯完整版</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -20,8 +22,7 @@
         .date-card.active { background: white; color: #ff7e5f; box-shadow: 0 8px 15px rgba(255, 126, 95, 0.2); transform: scale(1.05); }
         #map { height: 160px; border-radius: 20px; z-index: 10; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .btn-naver { background: #03C75A; color: white; padding: 12px; border-radius: 12px; font-weight: bold; text-align: center; display: block; }
-        .tag-vegan { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
-        .tag-transport { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .swipe-area { height: 100%; display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
@@ -34,8 +35,8 @@
                     <p class="text-[10px] font-bold text-white/90 uppercase tracking-widest">Baby & Vegan Adventure</p>
                 </div>
                 <div class="bg-white/30 backdrop-blur-md px-3 py-1 rounded-xl border border-white/40 text-white text-right">
-                    <div class="text-lg font-black leading-tight"><i class="fas fa-thermometer-half mr-1 text-orange-200"></i>2°</div>
-                    <div class="text-[10px] font-bold opacity-90">春季旅遊</div>
+                    <div class="text-lg font-black leading-tight"><i class="fas fa-thermometer-half mr-1 text-orange-200"></i>{{ seoulTemp.curr }}°</div>
+                    <div class="text-[10px] font-bold opacity-90"><i class="fas fa-mitten mr-1 text-blue-200"></i>{{ seoulTemp.feels }}°</div>
                 </div>
             </div>
             
@@ -61,7 +62,7 @@
                 <div class="flex justify-between items-center">
                     <h3 class="font-black text-white text-lg drop-shadow-sm">DAY {{ currentDayNumber }} <span class="text-white/70 ml-2 text-sm">{{ activeDateLabel }}</span></h3>
                     <div v-if="needsLaundry" class="bg-blue-500/80 backdrop-blur-md text-white text-[11px] px-3 py-1 rounded-full border border-white/30 shadow-sm">
-                        <i class="fas fa-tshirt mr-1"></i>洗衣日
+                        <i class="fas fa-tshirt mr-1"></i>洗衣日 👕
                     </div>
                 </div>
 
@@ -76,18 +77,17 @@
                         <div class="flex gap-2">
                             <i v-if="item.isVegan" class="fas fa-leaf text-emerald-500"></i>
                             <i v-if="item.hasElevator" class="fas fa-wheelchair text-blue-400"></i>
-                            <i v-if="item.isBaby" class="fas fa-baby text-rose-400"></i>
                         </div>
                     </div>
                     <h4 class="text-sm font-black text-slate-700 leading-tight">{{ item.location }}</h4>
-                    <p class="text-[11px] text-slate-500 mt-1 opacity-90 leading-normal line-clamp-1">{{ item.shortNote }}</p>
+                    <p class="text-[11px] text-slate-500 mt-1 opacity-90 leading-normal">{{ item.note.split('\n')[0] }}</p>
                 </div>
             </div>
 
             <div v-if="tab === 'tools'" class="space-y-4 pt-4">
                 <div class="bg-white/40 p-5 rounded-3xl border border-white/50 shadow-lg">
-                    <p class="text-orange-700 font-black text-sm mb-4"><i class="fas fa-language mr-1"></i> 點餐/溝通翻譯</p>
-                    <div class="bg-white rounded-2xl p-4 text-slate-700 space-y-4">
+                    <p class="text-orange-700 font-black text-sm mb-4"><i class="fas fa-language mr-1"></i> 點餐翻譯 (出示店員)</p>
+                    <div class="bg-white rounded-2xl p-4 text-slate-700 space-y-4 shadow-inner">
                         <div v-for="tr in translations" class="border-b last:border-0 pb-3">
                             <p class="text-[10px] text-slate-400 mb-1">{{ tr.zh }}</p>
                             <p class="text-base font-black">{{ tr.ko }}</p>
@@ -96,9 +96,10 @@
                 </div>
             </div>
 
-            <div v-if="tab === 'split'" class="pt-8 text-center">
+            <div v-if="tab === 'split'" class="pt-8 text-center animate-fade-in">
                 <h2 class="text-2xl font-black text-white mb-6">KRW 快速換匯</h2>
                 <div class="bg-white/30 p-10 rounded-[2.5rem] border border-white/40 shadow-2xl backdrop-blur-md">
+                    <p class="text-[10px] font-bold text-white uppercase mb-4 opacity-80">輸入韓幣</p>
                     <input v-model.number="krwInput" type="number" pattern="\d*" class="w-full bg-transparent text-6xl font-light text-center outline-none border-b border-white/50 pb-4 mb-8 text-white" placeholder="0">
                     <div class="flex justify-between items-center text-white">
                         <span class="text-xs font-bold bg-black/20 px-3 py-1 rounded-full">匯率 0.024</span>
@@ -109,27 +110,29 @@
         </main>
 
         <div class="fixed bottom-0 left-0 right-0 h-20 bg-white/10 backdrop-blur-xl z-[100] flex justify-around items-center px-10 border-t border-white/20">
-            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-white scale-110' : 'text-white/40'"><i class="fas fa-calendar-day text-xl"></i></button>
+            <button @click="tab = 'plan'" :class="tab === 'plan' ? 'text-white scale-110' : 'text-white/40'"><i class="fas fa-map-marked-alt text-xl"></i></button>
             <button @click="tab = 'tools'" :class="tab === 'tools' ? 'scale-125' : ''" class="w-14 h-14 bg-gradient-to-tr from-orange-400 to-rose-400 rounded-full shadow-lg flex items-center justify-center text-white -mt-8 border-4 border-white">
-                <i class="fas fa-utensils"></i>
+                <i class="fas fa-lightbulb"></i>
             </button>
             <button @click="tab = 'split'" :class="tab === 'split' ? 'text-white scale-110' : 'text-white/40'"><i class="fas fa-wallet text-xl"></i></button>
         </div>
 
         <div v-if="selectedItem" class="fixed inset-0 z-[120] flex items-end bg-black/50 backdrop-blur-sm" @click.self="selectedItem = null">
-            <div class="modal-content w-full p-6 pb-12 text-slate-800 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="modal-content w-full p-6 pb-12 text-slate-800 shadow-2xl overflow-y-auto max-h-[85vh]">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-                <span class="text-[10px] font-bold text-orange-500 uppercase">{{ selectedItem.time }}</span>
-                <h2 class="text-2xl font-black mt-1 mb-4 leading-tight">{{ selectedItem.location }}</h2>
-                
-                <div class="bg-orange-50 p-5 rounded-2xl mb-6">
-                    <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-line">{{ selectedItem.note }}</p>
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">{{ selectedItem.time }}</span>
+                        <h2 class="text-2xl font-black mt-1 leading-tight">{{ selectedItem.location }}</h2>
+                    </div>
                 </div>
-                
+                <div class="bg-orange-50 p-5 rounded-2xl mb-6">
+                    <p class="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">{{ selectedItem.note }}</p>
+                </div>
                 <div class="space-y-3">
-                    <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver"><i class="fab fa-neos mr-2"></i>在 Naver Map 查看</a>
-                    <a v-if="selectedItem.busUrl" :href="selectedItem.busUrl" target="_blank" class="bg-blue-500 text-white p-3 rounded-xl block text-center font-bold"><i class="fas fa-bus mr-2"></i>機場巴士官網</a>
-                    <button @click="selectedItem = null" class="w-full py-3 text-slate-400 font-bold">關閉</button>
+                    <a v-if="selectedItem.naverUrl" :href="selectedItem.naverUrl" target="_blank" class="btn-naver shadow-md"><i class="fab fa-neos mr-2"></i>使用 NAVER MAP 導航</a>
+                    <a v-if="selectedItem.busUrl" :href="selectedItem.busUrl" target="_blank" class="bg-blue-500 text-white p-3 rounded-xl block text-center font-bold shadow-md"><i class="fas fa-bus mr-2"></i>機場巴士官網</a>
+                    <button @click="selectedItem = null" class="w-full py-3 text-slate-400 font-bold">返回</button>
                 </div>
             </div>
         </div>
@@ -142,9 +145,11 @@
             setup() {
                 const tab = ref('plan');
                 const activeDate = ref('2026-03-03');
+                const seoulTemp = ref({ curr: '2', feels: '-2' });
                 const selectedItem = ref(null);
                 const krwInput = ref(null);
                 const touchStartX = ref(0);
+                const touchStartY = ref(0);
 
                 const dates = [
                     { week: 'Tue', displayDay: '03', fullDate: '2026-03-03' },
@@ -156,46 +161,44 @@
                 ];
 
                 const translations = [
-                    { zh: '請做成「蛋+起司+蔬菜」，不加火腿培根', ko: '계란, 치즈, 야채만 넣어주세요. 햄이랑 베이컨은 빼주세요.' },
-                    { zh: '我們是素食者，不吃肉和海鮮', ko: '우리는 채식주의자입니다. 고기와 해산물은 먹지 않습니다.' },
-                    { zh: '請把這份餐點做成無肉版本', ko: '이 요리를 고기 없이 만들어 주실 수 있나요?' },
-                    { zh: '這是不辣的嗎？小孩要吃的', ko: '이거 안 매운가요? 아이가 먹을 거예요.' },
-                    { zh: '附近有哺乳室/尿布台嗎？', ko: '근처에 수유실이나 기저귀 갈 곳이 있나요?' }
+                    { zh: '我不吃肉/海鮮', ko: '저는 고기나 해산물을 못 먹습니다.' },
+                    { zh: '不加火腿/肉類', ko: '햄과 고기는 빼주세요.' },
+                    { zh: '不加蔥蒜 (五辛)', ko: '파와 마늘은 빼주세요.' },
+                    { zh: '這是不辣的嗎？', ko: '이거 안 매운 거예요?' }
                 ];
 
+                // 行程資料 (保持與前版一致)
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 101, time: '08:00', location: '機場接送前往桃園機場-T2', shortNote: '準時出發前往機場', note: '確認預約車輛，攜帶好小孩護照與推車。' },
-                        { id: 102, time: '11:40', location: '韓亞航空 OZ712', shortNote: '飛往仁川機場 ICN-T2', note: '航程約 2h 45m，預計 15:25 抵達。' },
-                        { id: 103, time: '16:00', location: '機場巴士 6001/6015', shortNote: '前往明洞 L7 飯店', note: '車程約 70-90 分鐘。司機會協助將推車與大行李放入行李艙。', busUrl: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4', lat: 37.460, lng: 126.440 },
-                        { id: 104, time: '17:30', location: 'L7 MYEONGDONG 入住', shortNote: '飯店 Check-in 休息', note: '辦理入住，稍作休息。飯店周邊熱鬧。', naverUrl: 'https://naver.me/5A3prvsx', lat: 37.561, lng: 126.985 },
-                        { id: 105, time: '18:00', location: '換錢與晚餐', isVegan: true, shortNote: 'Money Planet 換匯', note: '1. 步行至 Money Planet 換現金。\n2. 晚餐：Vegan Kitchen 明洞。', naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.562, lng: 126.984 }
+                        { id: 101, time: '08:00', location: '機場接送前往桃園機場-T2', note: '預約接送車輛。' },
+                        { id: 102, time: '11:40', location: '仁川機場 ICN-T2 (OZ712)', note: '韓亞航空，15:25抵達。', duration: '2h45m' },
+                        { id: 103, time: '16:00', location: '機場巴士 6001/6015', note: '【明洞 L7 飯店（約 70–90 分）】\n司機會搬推車放行李艙。', busUrl: 'https://airportlimousine.co.kr/en/sub/sub01.php?cat_no=4', lat: 37.460, lng: 126.440 },
+                        { id: 104, time: '17:30', location: 'L7 MYEONGDONG 辦理入住', note: '休息與放置行李。', naverUrl: 'https://naver.me/5A3prvsx', lat: 37.561, lng: 126.985 },
+                        { id: 105, time: '18:00', location: '換錢與晚餐', note: 'Money Planet 換錢，隨後前往 Vegan Kitchen。', isVegan: true, lat: 37.562, lng: 126.985 }
                     ],
                     '2026-03-04': [
-                        { id: 201, time: '11:00', location: '地鐵往 永登浦 ZOOLUNG', hasElevator: true, shortNote: '約 40 分鐘路程', note: '搭乘地鐵 1 號線至永登浦站。 \n【動線】5 號出口步行 8-10 分。進入新世界百貨，由 3 號門出，右轉進入時代廣場 9 號門，搭電梯至 4 樓。', lat: 37.517, lng: 126.903 },
-                        { id: 202, time: '12:00', location: 'ZOOLUNG 餵動物', isBaby: true, shortNote: '室內動物園互動', note: '4 樓換票處加購飼料。園區入口在 5 樓。', naverUrl: 'https://naver.me/5D8tLRuw' },
-                        { id: 203, time: '14:00', location: '時代廣場百貨午餐', shortNote: '百貨 B1 美食區', note: '推薦：Papavalley pizza / Cuchara (墨西哥捲餅) / Abiko curry (咖哩可選無肉)。', lat: 37.517, lng: 126.904 },
-                        { id: 204, time: '18:30', location: '晚餐：Vegetus', isVegan: true, shortNote: '純素西式漢堡/義大利麵', note: '位於解放村一帶，也可考慮叫外送回飯店吃。', naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.543, lng: 126.989 }
+                        { id: 201, time: '11:00', location: '永登浦 ZOOLUNG (地鐵)', note: '【永登浦站 5號出口有電梯】約 40 分鐘。', duration: '40m', hasElevator: true, naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.517, lng: 126.903 },
+                        { id: 202, time: '12:00', location: 'ZOOLUNG 餵動物', note: '4樓換票，5樓入場。' },
+                        { id: 203, time: '18:30', location: '晚餐：Vegetus', note: '純素西式漢堡。', isVegan: true, naverUrl: 'https://naver.me/FXwG3iFJ', lat: 37.5435, lng: 126.9890 }
                     ],
                     '2026-03-05': [
-                        { id: 301, time: '11:00', location: 'Isaac Toast 明洞', shortNote: '外帶吐司當午餐', note: '請店員客製化：「蛋＋起司＋蔬菜，不要火腿培根」。帶去公園吃。', naverUrl: 'https://naver.me/5ssT3F6T', lat: 37.561, lng: 126.986 },
-                        { id: 302, time: '12:00', location: '兒童大公園', isBaby: true, shortNote: '動物園 + 遊樂設施', note: '搭乘地鐵至「兒童大公園站」。園區內有無障礙步道，適合推車。', naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 },
-                        { id: 303, time: '18:00', location: '晚餐：Vegan Kitchen', isVegan: true, shortNote: '韓式素食料理', note: '回明洞晚餐：韓式素拌飯、煎餅、辣炒年糕。不辣的湯麵適合小孩。', naverUrl: 'https://naver.me/5qDjqnXT' }
+                        { id: 301, time: '11:00', location: 'Isaac Toast 明洞', note: '蛋+起司+蔬菜版本。', naverUrl: 'https://naver.me/5ssT3F6T', lat: 37.5618, lng: 126.986 },
+                        { id: 302, time: '12:00', location: '兒童大公園', note: '動物園+遊樂設施。推車友善。', duration: '30m', naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 },
+                        { id: 303, time: '18:00', location: '晚餐與洗衣', note: 'Vegan Kitchen。回飯店洗衣服(準備500韓元硬幣x8)。', isVegan: true }
                     ],
                     '2026-03-06': [
-                        { id: 401, time: '11:00', location: '前往北村韓屋村', hasElevator: true, shortNote: '安國站 4 號線轉 3 號線', note: '明洞站 -> 忠武路轉 3 號線 -> 安國站 (約 15 分)。 \n【推車建議】2 號出口有電梯。走主幹道 Bukchon-ro 較平坦，選 1-2 個坡度平緩的巷子看韓屋。', lat: 37.582, lng: 126.983 },
-                        { id: 402, time: '14:00', location: '午餐：Osegye Hyang', isVegan: true, shortNote: '仁寺洞經典純素韓式', note: '從北村走過來約 10-15 分。15:00-17:00 為休息時間，建議 14:00 抵達。', naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
-                        { id: 403, time: '17:00', location: '馬路自然食飯捲 (外帶)', isVegan: true, shortNote: '買晚餐回飯店', note: '安國站 6 號出口附近，純素布帳馬車飯捲。', naverUrl: 'https://naver.me/GgWkau2p' }
+                        { id: 401, time: '12:00', location: '北村韓屋村散步', note: '【安國站 2 號出口有電梯】\n走主幹道 Bukchon-ro 較適合推車。', hasElevator: true, lat: 37.582, lng: 126.983 },
+                        { id: 402, time: '14:00', location: '午餐：Osegye Hyang', note: '仁寺洞純素韓式。15:00 休息。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 }
                     ],
                     '2026-03-07': [
-                        { id: 501, time: '11:00', location: '樂天百貨 明洞', isBaby: true, shortNote: '逛童裝與玩具', note: 'B1-F2 是重點。午餐選義大利麵/披薩，請店員做無肉版。', naverUrl: 'https://naver.me/Gsj23L5e', lat: 37.564, lng: 126.981 },
-                        { id: 502, time: '13:30', location: '前往 COEX Mall', hasElevator: true, shortNote: '2 號線直達三成站', note: '乙支路入口站 -> 三成站 (32分)。5、6 號出口步行 5 分。', lat: 37.512, lng: 127.059 },
-                        { id: 503, time: '17:30', location: '晚餐：Plantude', isVegan: true, shortNote: 'COEX Mall 內人氣純素', note: '位於 B1 I-111 號。環境好，餐點精緻。', naverUrl: 'https://naver.me/xNLZtGxo' }
+                        { id: 501, time: '11:00', location: '樂天百貨 明洞', note: '童裝玩具區。電梯與2號線連通。', hasElevator: true, lat: 37.565, lng: 126.981 },
+                        { id: 502, time: '13:30', location: 'COEX Mall (地鐵直達)', note: '乙支路入口 -> 三成站。', duration: '32m', lat: 37.512, lng: 127.059 },
+                        { id: 503, time: '17:30', location: '晚餐：Plantude', note: '純素餐廳(B1 I-111)。👕 洗衣日。', isVegan: true, naverUrl: 'https://naver.me/xNLZtGxo' }
                     ],
                     '2026-03-08': [
-                        { id: 601, time: '11:00', location: '明洞最後採買', shortNote: 'Olive Young & 小吃', note: '補貨與退房，行李可先寄放飯店。' },
-                        { id: 602, time: '14:30', location: '搭 6015 機場巴士', shortNote: '前往仁川機場 T1', note: '請預留 1.5 小時車程。', lat: 37.561, lng: 126.985 },
-                        { id: 603, time: '19:45', location: '回台飛機 BR159', shortNote: '預計 21:40 抵台', note: '長榮航空。提早 2-3 小時辦理報到。' }
+                        { id: 601, time: '11:00', location: '明洞最後巡禮', note: '採買 Olive Young & 街頭小吃。' },
+                        { id: 602, time: '14:30', location: '機場巴士 6015', note: '回仁川T1，車程約 90 分鐘。', duration: '90m' },
+                        { id: 603, time: '19:45', location: '回台飛機 BR159', note: '預計 21:40 抵達台灣。' }
                     ]
                 };
 
@@ -223,30 +226,41 @@
                     currentItinerary.value.forEach(item => {
                         if(item.lat && item.lng) {
                             const marker = L.circleMarker([item.lat, item.lng], {
-                                radius: 8, fillOpacity: 1, color: '#fff', weight: 3, fillColor: item.isVegan ? '#10b981' : '#ff7e5f'
+                                radius: 7, fillOpacity: 1, color: '#fff', weight: 2, fillColor: item.isVegan ? '#10b981' : '#ff7e5f'
                             }).addTo(map);
+                            marker.on('click', () => { selectedItem.value = item; });
                             markers.push(marker);
                             coords.push([item.lat, item.lng]);
                         }
                     });
-                    if (coords.length > 0) map.fitBounds(coords, { padding: [30, 30] });
+                    if (coords.length > 0) map.fitBounds(coords, { padding: [20, 20] });
                 };
 
-                const handleTouchStart = (e) => { touchStartX.value = e.touches[0].clientX; };
+                // 滑動切換日期
+                const handleTouchStart = (e) => {
+                    touchStartX.value = e.touches[0].clientX;
+                    touchStartY.value = e.touches[0].clientY;
+                };
+
                 const handleTouchEnd = (e) => {
-                    if (tab.value !== 'plan') return;
+                    if (tab.value !== 'plan') return; // 僅行程頁支援滑動切換
                     const deltaX = e.changedTouches[0].clientX - touchStartX.value;
-                    const currentIndex = dates.findIndex(d => d.fullDate === activeDate.value);
-                    if (Math.abs(deltaX) > 80) {
-                        if (deltaX > 0 && currentIndex > 0) activeDate.value = dates[currentIndex - 1].fullDate;
-                        else if (deltaX < 0 && currentIndex < dates.length - 1) activeDate.value = dates[currentIndex + 1].fullDate;
+                    const deltaY = Math.abs(e.changedTouches[0].clientY - touchStartY.value);
+                    
+                    if (Math.abs(deltaX) > 80 && deltaY < 50) {
+                        const currentIndex = dates.findIndex(d => d.fullDate === activeDate.value);
+                        if (deltaX > 0 && currentIndex > 0) {
+                            activeDate.value = dates[currentIndex - 1].fullDate;
+                        } else if (deltaX < -0 && currentIndex < dates.length - 1) {
+                            activeDate.value = dates[currentIndex + 1].fullDate;
+                        }
                     }
                 };
 
                 watch(activeDate, () => { updateMarkers(); });
                 onMounted(() => { initMap(); });
 
-                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, selectedItem, needsLaundry, translations, krwInput, handleTouchStart, handleTouchEnd };
+                return { tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, seoulTemp, selectedItem, needsLaundry, translations, krwInput, handleTouchStart, handleTouchEnd };
             }
         }).mount('#app');
     </script>
