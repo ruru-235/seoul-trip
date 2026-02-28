@@ -1,4 +1,4 @@
-變更氣溫
+最新新新新
 
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -34,7 +34,7 @@
                     <h1 class="text-2xl font-black italic tracking-tighter text-white drop-shadow-sm">SEOUL <span class="text-yellow-200">2026</span></h1>
                     <p class="text-[10px] font-bold text-white/90 uppercase tracking-widest">Baby & Vegan Adventure</p>
                 </div>
-                <div class="bg-white/30 backdrop-blur-md px-3 py-1 rounded-xl border border-white/40 text-white text-right min-w-[85px]">
+                <div class="bg-white/30 backdrop-blur-md px-3 py-1 rounded-xl border border-white/40 text-white text-right min-w-[80px]">
                     <div class="text-lg font-black leading-tight flex items-center justify-end gap-1">
                         <i :class="tempIcon" :style="{ color: tempColor }"></i>
                         <span>{{ seoulTemp.curr }}°</span>
@@ -86,7 +86,7 @@
                             </div>
                         </div>
                         <h4 class="text-sm font-black text-slate-700 leading-tight">{{ item.location }}</h4>
-                        <p class="text-[11px] text-slate-500 mt-1 line-clamp-2">{{ item.note }}</p>
+                        <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-snug">{{ item.note }}</p>
                     </div>
                 </div>
 
@@ -127,7 +127,7 @@
             <div class="modal-content w-full p-6 pb-12 text-slate-800 shadow-2xl overflow-y-auto max-h-[85vh]">
                 <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
                 <span class="text-[10px] font-bold text-orange-500 uppercase">{{ selectedItem.time }}</span>
-                <h2 class="text-2xl font-black mt-1 mb-4">{{ selectedItem.location }}</h2>
+                <h2 class="text-2xl font-black mt-1 mb-4 leading-tight">{{ selectedItem.location }}</h2>
                 <div class="bg-orange-50 p-5 rounded-2xl mb-6">
                     <p class="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">{{ selectedItem.note }}</p>
                 </div>
@@ -149,39 +149,19 @@
                 const selectedItem = ref(null);
                 const krwInput = ref(null);
                 const touchStartX = ref(0);
-                const touchEndX = ref(0);
 
-                // 【變更點：新增自動氣象邏輯】
-                const seoulTemp = ref({ curr: '--', feels: '--' });
-                
-                const fetchWeather = async () => {
-                    try {
-                        const lat = 37.5665, lon = 126.9780;
-                        const apiKey = 'b7379471f654f67c34f3586884399e5a'; 
-                        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`);
-                        const data = await res.json();
-                        seoulTemp.value = {
-                            curr: Math.round(data.main.temp).toString(),
-                            feels: Math.round(data.main.feels_like).toString()
-                        };
-                    } catch (e) {
-                        seoulTemp.value = { curr: '15', feels: '14' };
-                    }
-                };
-
+                // --- 氣溫邏輯段落 ---
+                const seoulTemp = ref({ curr: '2', feels: '-2' });
                 const tempIcon = computed(() => {
                     const t = parseInt(seoulTemp.value.curr);
-                    if (isNaN(t)) return 'fas fa-spinner fa-spin';
                     if (t <= 0) return 'fas fa-snowflake';
-                    if (t < 15) return 'fas fa-thermometer-half';
+                    if (t < 12) return 'fas fa-thermometer-half';
                     return 'fas fa-sun';
                 });
-
                 const tempColor = computed(() => {
                     const t = parseInt(seoulTemp.value.curr);
-                    if (isNaN(t)) return '#ffffff';
                     if (t <= 0) return '#a1c4fd';
-                    if (t < 15) return '#ffecd2';
+                    if (t < 12) return '#ffecd2';
                     return '#ffce67';
                 });
 
@@ -198,56 +178,56 @@
                     { zh: '我不吃肉/海鮮', ko: '저는 고기나 해산물을 못 먹습니다.' },
                     { zh: '不加火腿/肉類', ko: '햄과 고기는 빼주세요.' },
                     { zh: '不加蔥蒜 (五辛)', ko: '파와 마늘은 빼주세요.' },
-                    { zh: '這是不辣的嗎？', ko: '이거 안 매運 거예요?' }
+                    { zh: '這是不辣的嗎？', ko: '이거 안 매운 거예요?' }
                 ];
 
                 const itineraryData = {
                     '2026-03-03': [
-                        { id: 101, time: '15:25', location: '抵達仁川機場 T2', note: '韓亞航空 OZ712' },
-                        { id: 102, time: '16:00', location: '機場巴士 6001/6015', note: '往明洞 L7 飯店，車程約 70-90 分。', lat: 37.460, lng: 126.440 },
-                        { id: 103, time: '18:00', location: 'Money Planet 換錢', note: '飯店步行去換現金。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.560, lng: 126.984 },
-                        { id: 104, time: '18:30', location: '晚餐：Vegan Kitchen 明洞', note: '享受純素韓式料理。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.562, lng: 126.985 },
-                        { id: 105, time: '19:30', location: '明洞旗艦店 & 街頭散步', note: '逛 Olive Young 旗艦店與街頭小吃。', lat: 37.564, lng: 126.985 },
-                        { id: 106, time: '21:00', location: 'L7 MYEONGDONG', note: '回飯店休息。', naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 101, time: '15:25', location: '抵達仁川機場 T2', note: '韓亞航空 OZ712，預計領行李約 16:00。' },
+                        { id: 102, time: '16:00', location: '機場巴士 6001/6015', note: '前往明洞 L7 飯店，車程約 70-90 分鐘。', lat: 37.460, lng: 126.440 },
+                        { id: 103, time: '18:00', location: 'Money Planet 換錢', note: '飯店步行去換現金，此店匯率較優。', naverUrl: 'https://naver.me/xX7T2DSk', lat: 37.560, lng: 126.984 },
+                        { id: 104, time: '18:30', location: '晚餐：Vegan Kitchen 明洞', note: '多樣純素選擇。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT', lat: 37.562, lng: 126.985 },
+                        { id: 105, time: '19:30', location: 'Olive Young 旗艦店 & 散步', note: '採購藥妝、明洞街頭小吃巡禮。', lat: 37.564, lng: 126.985 },
+                        { id: 106, time: '21:00', location: '回飯店 L7 MYEONGDONG', note: '飯店休息。', naverUrl: 'https://naver.me/5A3prvsx' }
                     ],
                     '2026-03-04': [
-                        { id: 201, time: '12:00', location: 'ZOOLUNG 永登浦', note: '【換票流程】\n1. 4樓入口電扶梯旁換票（加購飼料）。\n2. 5樓園區入口入場。\n【路線】永登浦站 5號出口 → 沿對角線過馬路 → 進入新世界百貨 → 3號門出來後右轉進入時代廣場9號門 → 左側電扶梯上4樓。', naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.517, lng: 126.904, hasElevator: true },
-                        { id: 202, time: '14:00', location: '午餐：時代廣場 B1', note: '推薦：Papavalley pizza / Cuchara / Abiko curry。' },
-                        { id: 203, time: '15:30', location: 'Times Square 逛街', note: '童裝＋女裝＋玩具區級。', lat: 37.517, lng: 126.903 },
-                        { id: 204, time: '17:30', location: '地鐵回明洞', note: '路程約 40 分鐘。', duration: '40m' },
-                        { id: 205, time: '18:30', location: '晚餐： Vegetus   <或叫外送>', note: '純素西式餐廳，有漢堡、義大利麵。, naverUrl:'https://naver.me/FXwG3iFJ' },
-                        { id: 206, time: '19:30', location: '回飯店 L7', note: '飯店休息。', naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 201, time: '12:00', location: 'ZOOLUNG 永登浦', note: '【換票流程】\n1. 4樓換票（加購飼料）。\n2. 5樓入口入場。\n【路線】站5號出口→過馬路→入新世界百貨→3號門出右轉進時代廣場9號門→左側電扶梯上4樓。', naverUrl: 'https://naver.me/5D8tLRuw', lat: 37.517, lng: 126.904, hasElevator: true },
+                        { id: 202, time: '14:00', location: '午餐：時代廣場 B1', note: '美食街：Papavalley pizza / Cuchara / Abiko curry。' },
+                        { id: 203, time: '15:30', location: 'Times Square 逛街', note: '童裝＋女裝＋玩具區一次搞定。' },
+                        { id: 204, time: '17:30', location: '地鐵回明洞', note: '車程約 40 分鐘。', duration: '40m' },
+                        { id: 205, time: '18:30', location: '晚餐', note: '明洞周邊或叫外送。' },
+                        { id: 206, time: '19:30', location: '回飯店 L7', note: '準備明日體力。', naverUrl: 'https://naver.me/5A3prvsx'  }
                     ],
                     '2026-03-05': [
-                        { id: 301, time: '11:30', location: '地鐵前往兒童大公園', note: '搭乘地鐵前往（約30分鐘）。', duration: '30m' },
-                        { id: 302, time: '12:00', location: '兒童大公園', note: '動物園＋遊樂設施。推車友善。\n13:00 午餐：便利商店三明治、飯糰。', naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 },
-                        { id: 303, time: '15:00', location: '回明洞', note: '地鐵回程。', duration: '40m' },
-                        { id: 304, time: '16:00', location: '明洞逛街/咖啡廳', note: '放鬆休息。' },
-                        { id: 305, time: '18:00', location: '晚餐：Vegan Kitchen', note: '吃韓式素拌飯、煎餅、辣炒年糕、不辣的湯麵給小孩。\n飯店步行僅 6 分鐘。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT' },
-                        { id: 306, time: '20:00', location: '回飯店 - 洗衣日', note: '洗衣服（準備500韓元硬幣x8）。', naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 301, time: '11:30', location: '前往兒童大公園', note: '搭乘地鐵 5 號線（約 30 分鐘）。', duration: '30m' },
+                        { id: 302, time: '12:00', location: '兒童大公園', note: '動物園＋遊樂場。推車友善。\n13:00 午餐：便利商店三明治、飯糰。', naverUrl: 'https://naver.me/FV7YaCHu', lat: 37.548, lng: 127.081 },
+                        { id: 303, time: '15:00', location: '地鐵回明洞', note: '車程約 40 分鐘。', duration: '40m' },
+                        { id: 304, time: '16:00', location: '明洞逛街 / 咖啡廳', note: '放鬆休息，補充能量。' },
+                        { id: 305, time: '18:00', location: '晚餐：Vegan Kitchen', note: '韓式素拌飯、煎餅、不辣湯麵（適合小孩）。飯店步行 6 分鐘。', isVegan: true, naverUrl: 'https://naver.me/5qDjqnXT' },
+                        { id: 306, time: '20:00', location: '飯店洗衣服', note: '需準備 500 韓元硬幣 x 8。' , naverUrl: 'https://naver.me/5A3prvsx' }
                     ],
                     '2026-03-06': [
                         { id: 401, time: '11:00', location: '出發前往北村', note: '明洞站 → 忠武路轉 3 號線 → 安國站。\n約 15 分鐘，安國站 4 號線轉乘有電梯。', hasElevator: true },
-                        { id: 402, time: '12:00', location: '北村韓屋村散步', note: '從安國站 2 號出口出發。先走主幹道 Bukchon-ro，路寬且平適，合推車，小孩可看房子。選 1–2 條巷子拍經典坡道。', lat: 37.582, lng: 126.983 },
-                        { id: 403, time: '14:00', location: '午餐：Osegye Hyang', note: '仁寺洞純素韓式。從北村走下來約 10–15 分鐘。\n建議此時到剛好避開 15:00 休息。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
-                        { id: 404, time: '15:30', location: '仁寺洞/附近散步', note: '逛街、喝咖啡，小孩推車睡覺。' },
+                        { id: 402, time: '12:00', location: '北村韓屋村散步', note: '安國站 2 號出口。走 Bukchon-ro 主幹道，寬平適推車。', lat: 37.582, lng: 126.983 },
+                        { id: 403, time: '14:00', location: '午餐：Osegye Hyang', note: '仁寺洞韓式純素。建議 14:00 前抵達。', isVegan: true, naverUrl: 'https://naver.me/xVBx7LH9', lat: 37.574, lng: 126.985 },
+                        { id: 404, time: '15:30', location: '仁寺洞散步', note: '喝咖啡，小孩推車小睡。' },
                         { id: 405, time: '17:00', location: '回程買當晚餐:飯捲', note: '마루자연식김밥 (布帳馬車)。\n安國站 6 號出口。', isVegan: true, naverUrl: 'https://naver.me/GgWkau2p' },
-                        { id: 406, time: '17:30', location: '回飯店 L7', note: '飯店休息。', naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 406, time: '17:30', location: '回飯店 L7', note: '飯店休息吃晚餐。', naverUrl: 'https://naver.me/5A3prvsx' }
                     ],
                     '2026-03-07': [
-                        { id: 501, time: '11:00', location: '樂天百貨 明洞', note: '飯店步行約 8-10 分鐘。\nB1–F2 童裝、女裝、玩具集中區。', naverUrl: 'https://naver.me/Gsj23L5e', lat: 37.565, lng: 126.981 },
-                        { id: 502, time: '12:30', location: '午餐：樂天百貨內', note: '選義大利麵/披薩（無肉版）。' },
+                        { id: 501, time: '11:00', location: '樂天百貨 明洞', note: 'B1-F2 童裝、女裝、玩具集中逛。', naverUrl: 'https://naver.me/Gsj23L5e', lat: 37.565, lng: 126.981 },
+                        { id: 502, time: '12:30', location: '午餐：百貨內餐廳', note: '義大利麵/披薩（可做去肉版）。' },
                         { id: 503, time: '13:30', location: '前往 COEX', note: '乙支路入口搭 2 號線 → 三成站（直達32分）。下車後步 5 分。', duration: '40m' },
-                        { id: 504, time: '15:00', location: 'Starfield 圖書館', note: '打卡拍照。', naverUrl: 'https://naver.me/FqWtKj05', lat: 37.512, lng: 127.059 },
-                        { id: 505, time: '16:00', location: 'COEX 逛街', note: '雜貨、女裝、咖啡廳。' },
+                        { id: 504, time: '15:00', location: 'Starfield 圖書館', note: '星空圖書館拍照。', naverUrl: 'https://naver.me/FqWtKj05', lat: 37.512, lng: 127.059 },
+                        { id: 505, time: '16:00', location: 'COEX 購物', note: '雜貨、女裝、咖啡廳。' },
                         { id: 506, time: '17:30', location: '晚餐：Plantude', note: 'COEX Mall 內純素餐廳 (B1 I-111)。評價極高。', isVegan: true, naverUrl: 'https://naver.me/xNLZtGxo' },
-                        { id: 507, time: '18:30', location: '地鐵回明洞', note: '三成站 2 號線直達乙支路入口。', duration: '40m' },
-                        { id: 508, time: '19:30', location: '回飯店 L7', note: '收拾行李。', naverUrl: 'https://naver.me/5A3prvsx' }
+                        { id: 507, time: '18:30', location: '地鐵回明洞', note: '三成站 2 號線直達乙支路入口。', duration: '40m'  },
+                        { id: 508, time: '19:30', location: '回飯店 L7', note: '洗衣 & 整理行李。' , naverUrl: 'https://naver.me/5A3prvsx' }
                     ],
                     '2026-03-08': [
-                        { id: 601, time: '11:00', location: '明洞最後巡禮', note: '採買 Olive Young & 小吃。' },
+                        { id: 601, time: '11:00', location: '明洞最後採買', note: '藥妝補貨& 小吃。' },
                         { id: 602, time: '14:30', location: '機場巴士 6015', note: '回仁川 T1。' },
-                        { id: 603, time: '19:45', location: '回台飛機', note: 'OZ159' }
+                        { id: 603, time: '19:45', location: '返程飛機', note: 'BR159，預計 21:40 抵台。' }
                     ]
                 };
 
@@ -289,9 +269,7 @@
                 };
 
                 const handleTouchEnd = (e) => {
-                    touchEndX.value = e.changedTouches[0].clientX;
-                    const deltaX = touchEndX.value - touchStartX.value;
-                    
+                    const deltaX = e.changedTouches[0].clientX - touchStartX.value;
                     if (Math.abs(deltaX) > 100) {
                         const currentIndex = dates.findIndex(d => d.fullDate === activeDate.value);
                         if (deltaX > 0 && currentIndex > 0) {
@@ -303,19 +281,12 @@
                 };
 
                 watch(activeDate, () => { updateMarkers(); });
-                // 【變更點：掛載時啟動天氣抓取】
-                onMounted(() => { 
-                    initMap(); 
-                    fetchWeather(); 
-                    setInterval(fetchWeather, 1800000); // 每 30 分鐘自動刷新
-                });
+                onMounted(() => { initMap(); });
 
-                // 【變更點：將天氣變數 Return 出去】
                 return { 
-                    tab, activeDate, dates, currentItinerary, currentDayNumber, 
-                    activeDateLabel, selectedItem, needsLaundry, translations, 
-                    krwInput, handleTouchStart, handleTouchEnd,
-                    seoulTemp, tempIcon, tempColor 
+                    tab, activeDate, dates, currentItinerary, currentDayNumber, activeDateLabel, 
+                    selectedItem, needsLaundry, translations, krwInput, handleTouchStart, handleTouchEnd,
+                    seoulTemp, tempIcon, tempColor
                 };
             }
         }).mount('#app');
